@@ -1,0 +1,6 @@
+bayes\_covernet.tf.metrics.drivable\_area\_compliance
+=====================================================
+
+.. currentmodule:: bayes_covernet.tf.metrics
+
+.. autofunction:: drivable_area_compliance

@@ -1,6 +1,0 @@
-bayes\_covernet.pytorch.model.models.mtp\_to\_trajs
-===================================================
-
-.. currentmodule:: bayes_covernet.pytorch.model.models
-
-.. autofunction:: mtp_to_trajs

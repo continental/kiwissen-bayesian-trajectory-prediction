@@ -16,6 +16,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="#" />
@@ -42,7 +43,8 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="mdfiles.html">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mdfiles.html">CHANGELOG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mdfiles.html#bayesian-continual-learning-for-prior-knowledge-integration">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apidoc.html">API Documentation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Code Structure</a></li>
 <li class="toctree-l1"><a class="reference internal" href="licenses.html">Licenses</a></li>
@@ -73,7 +75,7 @@
            <div itemprop="articleBody">
              
   <section id="code-structure">
-<h1>Code Structure<a class="headerlink" href="#code-structure" title="Permalink to this headline"></a></h1>
+<h1>Code Structure<a class="headerlink" href="#code-structure" title="Permalink to this heading"></a></h1>
 <p>Models are defined by a <a class="reference internal" href="generated/bayes_covernet.tf.model.abstract_models.ModelFactory.html#bayes_covernet.tf.model.abstract_models.ModelFactory" title="bayes_covernet.tf.model.abstract_models.ModelFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelFactory</span></code></a>, which is an abstract base class. Realizations usually consist of an base model
 (like <a class="reference internal" href="generated/bayes_covernet.tf.model.models.Covernet.html#bayes_covernet.tf.model.models.Covernet" title="bayes_covernet.tf.model.models.Covernet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Covernet</span></code></a>) and a probabilistic modeling Mixin (like <a class="reference internal" href="generated/bayes_covernet.tf.model.abstract_models.VIMixin.html#bayes_covernet.tf.model.abstract_models.VIMixin" title="bayes_covernet.tf.model.abstract_models.VIMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">VIMixin</span></code></a>), resulting in
 a complete ModelFactory (<a class="reference internal" href="generated/bayes_covernet.tf.model.models.CovernetVI.html#bayes_covernet.tf.model.models.CovernetVI" title="bayes_covernet.tf.model.models.CovernetVI"><code class="xref py py-class docutils literal notranslate"><span class="pre">CovernetVI</span></code></a>).</p>

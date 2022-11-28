@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bayesian Continual Learning for Prior Knowledge Integration &mdash; Bayesian Continual Learning  documentation</title>
+  <title>Changelog &mdash; Bayesian Continual Learning  documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/my_theme.css" type="text/css" />
@@ -16,6 +16,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
@@ -42,18 +43,26 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Bayesian Continual Learning for Prior Knowledge Integration</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-1">Version 0.1</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#bayesian-continual-learning-for-prior-knowledge-integration">Bayesian Continual Learning for Prior Knowledge Integration</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#getting-started">Getting started</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#installing">Installing</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#running">Running</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#experiments">Experiments</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#model">Model</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#prior-distribution">Prior Distribution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#prior-knowledge">Prior Knowledge</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#prediction-model">Prediction Model</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#continual-learning">Continual Learning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#knowledge-integration">Knowledge Integration</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#license">License</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">Changelog</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="apidoc.html">API Documentation</a></li>
@@ -75,7 +84,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Bayesian Continual Learning for Prior Knowledge Integration</li>
+      <li>Changelog</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/mdfiles.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -85,13 +94,22 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="bayesian-continual-learning-for-prior-knowledge-integration">
-<h1>Bayesian Continual Learning for Prior Knowledge Integration<a class="headerlink" href="#bayesian-continual-learning-for-prior-knowledge-integration" title="Permalink to this headline"></a></h1>
+  <section id="changelog">
+<h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this heading"></a></h1>
+<section id="version-0-1">
+<h2>Version 0.1<a class="headerlink" href="#version-0-1" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>First public release</p></li>
+</ul>
+</section>
+</section>
+<section id="bayesian-continual-learning-for-prior-knowledge-integration">
+<h1>Bayesian Continual Learning for Prior Knowledge Integration<a class="headerlink" href="#bayesian-continual-learning-for-prior-knowledge-integration" title="Permalink to this heading"></a></h1>
 <p>Framework for integrating prior knowledge into trajectory prediction models via Bayesian Continual Learning.</p>
 <section id="getting-started">
-<h2>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline"></a></h2>
+<h2>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this heading"></a></h2>
 <section id="installing">
-<h3>Installing<a class="headerlink" href="#installing" title="Permalink to this headline"></a></h3>
+<h3>Installing<a class="headerlink" href="#installing" title="Permalink to this heading"></a></h3>
 <ol class="arabic simple">
 <li><p>Clone this repository</p></li>
 <li><p>Download <a class="reference external" href="https://www.nuscenes.org/nuscenes#download">NuScenes Trajectory Prediction Dataset</a></p></li>
@@ -100,44 +118,62 @@
 <ol class="arabic simple">
 <li><p>pip install requirements.txt</p></li>
 <li><p>pip install requirements_no_deps.txt –no-deps</p></li>
+<li><p>For GPU Use: cudatoolkit=11.2.2, cudatoolkit-dev=11.2.2, cudnn=8.2.1.32</p></li>
 </ol>
 </li>
 </ol>
 </section>
 <section id="running">
-<h3>Running<a class="headerlink" href="#running" title="Permalink to this headline"></a></h3>
+<h3>Running<a class="headerlink" href="#running" title="Permalink to this heading"></a></h3>
 <ol class="arabic simple">
 <li><p>Run with bayes_covernet/main.py as main entrypoint</p></li>
 <li><p>Edit config.gin to match your needs/setup.</p></li>
 <li><p>First start should use -c and -p for populating the cache. See –help for more arguments and description.</p></li>
 </ol>
+<p>For additional arguments, see <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">main.py</span> <span class="pre">--help</span></code>. Running in HEBO optimization mode (-o3) requires an additional <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">HEBO==0.3.2</span></code></p>
+</section>
+<section id="experiments">
+<h3>Experiments<a class="headerlink" href="#experiments" title="Permalink to this heading"></a></h3>
+<p>Configuration files for reruning experiments can be found under <code class="docutils literal notranslate"><span class="pre">bayes_covernet\config</span></code>. Please see the paper for hyperparameter configurations. GVCL and Transfer runs require setting a knowledge integrated model checkpoint. GVCL uses a VI_Prior model, set as <code class="docutils literal notranslate"><span class="pre">Trainer.prior_model</span></code>. Transfer uses a Det_Pretrain model, set as <code class="docutils literal notranslate"><span class="pre">Trainer.load_model</span></code>.</p>
 </section>
 </section>
 <section id="model">
-<h2>Model<a class="headerlink" href="#model" title="Permalink to this headline"></a></h2>
+<h2>Model<a class="headerlink" href="#model" title="Permalink to this heading"></a></h2>
 <p>The provided software computes a trajectory prediction model under consideration of a prior distribution. Currently available are:</p>
-<section id="prior-distribution">
-<h3>Prior Distribution<a class="headerlink" href="#prior-distribution" title="Permalink to this headline"></a></h3>
+<section id="prior-knowledge">
+<h3>Prior Knowledge<a class="headerlink" href="#prior-knowledge" title="Permalink to this heading"></a></h3>
 <ul class="simple">
 <li><p>Discrete Driveable: Discrete set of trajectories, as defined by <a class="reference external" href="https://arxiv.org/abs/1911.10298">CoverNet</a>, conditioned on all keypoints beeing driveable, as defined by the dataset.</p></li>
 </ul>
 </section>
 <section id="prediction-model">
-<h3>Prediction Model<a class="headerlink" href="#prediction-model" title="Permalink to this headline"></a></h3>
+<h3>Prediction Model<a class="headerlink" href="#prediction-model" title="Permalink to this heading"></a></h3>
 <ul class="simple">
 <li><p>Deterministic <a class="reference external" href="https://arxiv.org/abs/1911.10298">CoverNet</a></p></li>
 <li><p>Mean-Field Variational <a class="reference external" href="https://arxiv.org/abs/1911.10298">CoverNet</a></p></li>
-<li><p><a class="reference external" href="https://arxiv.org/abs/2006.10108">SNGP</a> <a class="reference external" href="https://arxiv.org/abs/1911.10298">CoverNet</a></p></li>
-<li><p>Deterministic <a class="reference external" href="https://arxiv.org/abs/1910.05449">MultiPath</a>, with <a class="reference external" href="https://arxiv.org/abs/1911.10298">CoverNet</a> input representation and trajectory set</p></li>
-<li><p>Mean-Field Variational <a class="reference external" href="https://arxiv.org/abs/1910.05449">MultiPath</a>, with <a class="reference external" href="https://arxiv.org/abs/1911.10298">CoverNet</a> input representation and trajectory set</p></li>
 </ul>
 </section>
-<section id="continual-learning">
-<h3>Continual Learning<a class="headerlink" href="#continual-learning" title="Permalink to this headline"></a></h3>
+<section id="knowledge-integration">
+<h3>Knowledge Integration<a class="headerlink" href="#knowledge-integration" title="Permalink to this heading"></a></h3>
 <ul class="simple">
 <li><p><a class="reference external" href="https://openreview.net/pdf?id=_IM-AfFhna9">Generalized Variational Continual Learning</a></p></li>
+<li><p><a class="reference external" href="https://arxiv.org/abs/2006.04767">Transfer Learning</a></p></li>
+<li><p><a class="reference external" href="https://arxiv.org/abs/2006.04767">Multitask Learning</a></p></li>
 </ul>
 </section>
+</section>
+<section id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this heading"></a></h2>
+<p>For further help, see the API-documentation or contact the maintainers.</p>
+</section>
+<section id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this heading"></a></h2>
+<p>Copyright (c) 2022 Continental Corporation. All rights reserved.</p>
+<p>This repository is licensed unter the BSD 3-Clause “New” or “Revised” license. See <a class="reference external" href="./LICENSE">LICENSE.txt</a> for the full license text.</p>
+</section>
+<section id="id3">
+<h2>Changelog<a class="headerlink" href="#id3" title="Permalink to this heading"></a></h2>
+<p>See <a class="reference external" href="./CHANGELOG.md">CHANGELOG.md</a>.</p>
 </section>
 </section>
 

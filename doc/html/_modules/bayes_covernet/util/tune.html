@@ -15,8 +15,10 @@
         <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
 </head>
@@ -38,8 +40,10 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../mdfiles.html">CHANGELOG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../mdfiles.html#bayesian-continual-learning-for-prior-knowledge-integration">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../apidoc.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">Code Structure</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../licenses.html">Licenses</a></li>
 </ul>
 
@@ -69,16 +73,18 @@
              
   <h1>Source code for bayes_covernet.util.tune</h1><div class="highlight"><pre>
 <span></span><span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">Created on 11.08.2021</span>
+<span class="sd">Copyright (c) 2021-2022 Continental AG.</span>
 
-<span class="sd">@author: Christian Wirth &lt;christian.2.wirth@continental-corporation.com&gt;</span>
+<span class="sd">@author: Christian Wirth</span>
 <span class="sd">&#39;&#39;&#39;</span>
 
 
-<div class="viewcode-block" id="trial_name_string"><a class="viewcode-back" href="../../../generated/bayes_covernet.util.tune.trial_name_string.html#bayes_covernet.util.tune.trial_name_string">[docs]</a><span class="k">def</span> <span class="nf">trial_name_string</span><span class="p">(</span><span class="n">trial</span><span class="p">,</span> <span class="n">consider_keys</span><span class="o">=</span><span class="p">[]):</span>
+<div class="viewcode-block" id="trial_name_string"><a class="viewcode-back" href="../../../generated/bayes_covernet.util.tune.trial_name_string.html#bayes_covernet.util.tune.trial_name_string">[docs]</a><span class="k">def</span> <span class="nf">trial_name_string</span><span class="p">(</span><span class="n">trial</span><span class="p">,</span> <span class="n">consider_keys</span><span class="o">=</span><span class="p">[],</span> <span class="n">is_eval</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
     <span class="n">trial_name</span> <span class="o">=</span> <span class="s2">&quot;Trial_&quot;</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
         <span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">trial</span><span class="o">.</span><span class="n">evaluated_params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">consider_keys</span><span class="p">]</span>
     <span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_eval</span><span class="p">:</span>
+        <span class="n">trial_name</span> <span class="o">=</span> <span class="n">trial_name</span> <span class="o">+</span> <span class="s2">&quot;_eval&quot;</span>
     <span class="k">return</span> <span class="n">trial_name</span></div>
 </pre></div>
 

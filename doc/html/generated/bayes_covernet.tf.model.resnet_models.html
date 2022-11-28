@@ -16,6 +16,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="../about.html" />
@@ -42,7 +43,8 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../mdfiles.html">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mdfiles.html">CHANGELOG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mdfiles.html#bayesian-continual-learning-for-prior-knowledge-integration">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../apidoc.html">API Documentation</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="bayes_covernet.html">bayes_covernet</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="bayes_covernet.main.html">bayes_covernet.main</a></li>
@@ -93,11 +95,11 @@
            <div itemprop="articleBody">
              
   <section id="bayes-covernet-tf-model-resnet-models">
-<h1>bayes_covernet.tf.model.resnet_models<a class="headerlink" href="#bayes-covernet-tf-model-resnet-models" title="Permalink to this headline"></a></h1>
+<h1>bayes_covernet.tf.model.resnet_models<a class="headerlink" href="#bayes-covernet-tf-model-resnet-models" title="Permalink to this heading"></a></h1>
 <p class="rubric">Description</p>
 <span class="target" id="module-bayes_covernet.tf.model.resnet_models"></span><p>ResNet based models Mixins</p>
 <p>Copyright (c) 2021-2022 Continental AG.</p>
-<p>&#64;author: Christian Wirth &lt;<a class="reference external" href="mailto:christian&#46;2&#46;wirth&#37;&#52;&#48;continental-corporation&#46;com">christian<span>&#46;</span>2<span>&#46;</span>wirth<span>&#64;</span>continental-corporation<span>&#46;</span>com</a>&gt;</p>
+<p>&#64;author: Christian Wirth</p>
 <p class="rubric">Classes</p>
 <table class="autosummary longtable docutils align-default">
 <colgroup>
@@ -117,7 +119,10 @@
 <tr class="row-even"><td><p><a class="reference internal" href="bayes_covernet.tf.model.resnet_models.ResNet50SNGPMixin.html#bayes_covernet.tf.model.resnet_models.ResNet50SNGPMixin" title="bayes_covernet.tf.model.resnet_models.ResNet50SNGPMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ResNet50SNGPMixin</span></code></a></p></td>
 <td><p>Deterministic ResNet50 model with spectral normalization and GP head</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="bayes_covernet.tf.model.resnet_models.ResNet50VIMixin.html#bayes_covernet.tf.model.resnet_models.ResNet50VIMixin" title="bayes_covernet.tf.model.resnet_models.ResNet50VIMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ResNet50VIMixin</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="bayes_covernet.tf.model.resnet_models.ResNet50VIHeadMixin.html#bayes_covernet.tf.model.resnet_models.ResNet50VIHeadMixin" title="bayes_covernet.tf.model.resnet_models.ResNet50VIHeadMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ResNet50VIHeadMixin</span></code></a></p></td>
+<td><p>Variational ResNet50 model</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="bayes_covernet.tf.model.resnet_models.ResNet50VIMixin.html#bayes_covernet.tf.model.resnet_models.ResNet50VIMixin" title="bayes_covernet.tf.model.resnet_models.ResNet50VIMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ResNet50VIMixin</span></code></a></p></td>
 <td><p>Variational ResNet50 model</p></td>
 </tr>
 </tbody>
@@ -125,7 +130,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="bayes_covernet.tf.model.resnet_models.ResNet50DetMVNMixin">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ResNet50DetMVNMixin</span></span><a class="reference internal" href="../_modules/bayes_covernet/tf/model/resnet_models.html#ResNet50DetMVNMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.model.resnet_models.ResNet50DetMVNMixin" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="bayes_covernet.tf.model.abstract_models.DetMVNMixin.html#bayes_covernet.tf.model.abstract_models.DetMVNMixin" title="bayes_covernet.tf.model.abstract_models.DetMVNMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">bayes_covernet.tf.model.abstract_models.DetMVNMixin</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="bayes_covernet.tf.model.abstract_models.DetMVNMixin.html#bayes_covernet.tf.model.abstract_models.DetMVNMixin" title="bayes_covernet.tf.model.abstract_models.DetMVNMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetMVNMixin</span></code></a></p>
 <p>Deterministic ResNet50 Backbone with deterministic class output and multivariate normal regression outputs.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="bayes_covernet.tf.model.resnet_models.ResNet50DetMVNMixin.get_resnet50">
@@ -137,7 +142,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="bayes_covernet.tf.model.resnet_models.ResNet50DetMixin">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ResNet50DetMixin</span></span><a class="reference internal" href="../_modules/bayes_covernet/tf/model/resnet_models.html#ResNet50DetMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.model.resnet_models.ResNet50DetMixin" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="bayes_covernet.tf.model.abstract_models.DetMixin.html#bayes_covernet.tf.model.abstract_models.DetMixin" title="bayes_covernet.tf.model.abstract_models.DetMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">bayes_covernet.tf.model.abstract_models.DetMixin</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="bayes_covernet.tf.model.abstract_models.DetMixin.html#bayes_covernet.tf.model.abstract_models.DetMixin" title="bayes_covernet.tf.model.abstract_models.DetMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetMixin</span></code></a></p>
 <p>Deterministic ResNet50 Backbone with deterministic class output.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="bayes_covernet.tf.model.resnet_models.ResNet50DetMixin.get_resnet50">
@@ -149,7 +154,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="bayes_covernet.tf.model.resnet_models.ResNet50ModelFactory">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ResNet50ModelFactory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_size</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/model/resnet_models.html#ResNet50ModelFactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.model.resnet_models.ResNet50ModelFactory" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="bayes_covernet.tf.model.abstract_models.ModelFactory.html#bayes_covernet.tf.model.abstract_models.ModelFactory" title="bayes_covernet.tf.model.abstract_models.ModelFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">bayes_covernet.tf.model.abstract_models.ModelFactory</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="bayes_covernet.tf.model.abstract_models.ModelFactory.html#bayes_covernet.tf.model.abstract_models.ModelFactory" title="bayes_covernet.tf.model.abstract_models.ModelFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelFactory</span></code></a></p>
 <p>ModelFactory for a RestNet50 backbone.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="bayes_covernet.tf.model.resnet_models.ResNet50ModelFactory.get_backbone">
@@ -178,7 +183,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="bayes_covernet.tf.model.resnet_models.ResNet50SNGPMixin">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ResNet50SNGPMixin</span></span><a class="reference internal" href="../_modules/bayes_covernet/tf/model/resnet_models.html#ResNet50SNGPMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.model.resnet_models.ResNet50SNGPMixin" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="bayes_covernet.tf.model.abstract_models.SNGPMixin.html#bayes_covernet.tf.model.abstract_models.SNGPMixin" title="bayes_covernet.tf.model.abstract_models.SNGPMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">bayes_covernet.tf.model.abstract_models.SNGPMixin</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="bayes_covernet.tf.model.abstract_models.SNGPMixin.html#bayes_covernet.tf.model.abstract_models.SNGPMixin" title="bayes_covernet.tf.model.abstract_models.SNGPMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">SNGPMixin</span></code></a></p>
 <p>Deterministic ResNet50 model with spectral normalization and GP head</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="bayes_covernet.tf.model.resnet_models.ResNet50SNGPMixin.get_resnet50">
@@ -188,9 +193,21 @@
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="bayes_covernet.tf.model.resnet_models.ResNet50VIHeadMixin">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ResNet50VIHeadMixin</span></span><a class="reference internal" href="../_modules/bayes_covernet/tf/model/resnet_models.html#ResNet50VIHeadMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.model.resnet_models.ResNet50VIHeadMixin" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="bayes_covernet.tf.model.abstract_models.VIMixin.html#bayes_covernet.tf.model.abstract_models.VIMixin" title="bayes_covernet.tf.model.abstract_models.VIMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">VIMixin</span></code></a></p>
+<p>Variational ResNet50 model</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_covernet.tf.model.resnet_models.ResNet50VIHeadMixin.get_resnet50">
+<span class="sig-name descname"><span class="pre">get_resnet50</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/model/resnet_models.html#ResNet50VIHeadMixin.get_resnet50"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.model.resnet_models.ResNet50VIHeadMixin.get_resnet50" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="bayes_covernet.tf.model.resnet_models.ResNet50VIMixin">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ResNet50VIMixin</span></span><a class="reference internal" href="../_modules/bayes_covernet/tf/model/resnet_models.html#ResNet50VIMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.model.resnet_models.ResNet50VIMixin" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="bayes_covernet.tf.model.abstract_models.VIMixin.html#bayes_covernet.tf.model.abstract_models.VIMixin" title="bayes_covernet.tf.model.abstract_models.VIMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">bayes_covernet.tf.model.abstract_models.VIMixin</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="bayes_covernet.tf.model.abstract_models.VIMixin.html#bayes_covernet.tf.model.abstract_models.VIMixin" title="bayes_covernet.tf.model.abstract_models.VIMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">VIMixin</span></code></a></p>
 <p>Variational ResNet50 model</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="bayes_covernet.tf.model.resnet_models.ResNet50VIMixin.get_resnet50">

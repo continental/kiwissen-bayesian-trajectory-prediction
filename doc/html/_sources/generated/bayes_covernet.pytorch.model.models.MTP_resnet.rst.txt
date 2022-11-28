@@ -1,6 +1,0 @@
-bayes\_covernet.pytorch.model.models.MTP\_resnet
-================================================
-
-.. currentmodule:: bayes_covernet.pytorch.model.models
-
-.. autofunction:: MTP_resnet

@@ -15,6 +15,7 @@
         <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
         <script src="../../../../_static/jquery.js"></script>
         <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../../_static/doctools.js"></script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="../../../../about.html" />
@@ -39,7 +40,8 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../../readme.html">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../mdfiles.html">CHANGELOG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../mdfiles.html#bayesian-continual-learning-for-prior-knowledge-integration">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../apidoc.html">API Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../about.html">Code Structure</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../licenses.html">Licenses</a></li>
@@ -75,7 +77,7 @@
 
 <span class="sd">Copyright (c) 2021-2022 Continental AG.</span>
 
-<span class="sd">@author: Christian Wirth &lt;christian.2.wirth@continental-corporation.com&gt;</span>
+<span class="sd">@author: Christian Wirth</span>
 <span class="sd">&#39;&#39;&#39;</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partialmethod</span>
@@ -137,7 +139,7 @@
 <span class="sd">        :rtype: Model</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">outputs</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="n">k</span><span class="p">:</span> <span class="n">layers</span><span class="o">.</span><span class="n">Activation</span><span class="p">(</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)(</span><span class="n">v</span><span class="p">)</span>
+            <span class="n">k</span><span class="p">:</span> <span class="n">layers</span><span class="o">.</span><span class="n">Activation</span><span class="p">(</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">k</span><span class="p">)(</span><span class="n">v</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">outputs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
         <span class="p">}</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">)</span>
@@ -182,7 +184,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
-<div class="viewcode-block" id="ModelFactory.get_head"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.ModelFactory.html#bayes_covernet.tf.model.abstract_models.ModelFactory.get_head">[docs]</a>    <span class="k">def</span> <span class="nf">get_head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logits</span><span class="p">,</span> <span class="n">num_modes</span><span class="p">,</span> <span class="n">is_classifier</span><span class="p">,</span> <span class="n">is_multilabel</span><span class="p">):</span>
+<div class="viewcode-block" id="ModelFactory.get_head"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.ModelFactory.html#bayes_covernet.tf.model.abstract_models.ModelFactory.get_head">[docs]</a>    <span class="k">def</span> <span class="nf">get_head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logits</span><span class="p">,</span> <span class="n">num_modes</span><span class="p">,</span> <span class="n">activation</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Builds a prediction output layer</span>
 
@@ -207,10 +209,16 @@
         <span class="k">for</span> <span class="n">hidden_layer_size</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">4096</span><span class="p">]:</span>
             <span class="n">logits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_hidden</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">hidden_layer_size</span><span class="p">)</span>
 
-        <span class="n">y_pred</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="n">key</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_head</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">is_classifier</span><span class="p">,</span> <span class="n">is_multilabel</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="p">(</span><span class="n">is_classifier</span><span class="p">,</span> <span class="n">is_multilabel</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">heads</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-        <span class="p">}</span>
+        <span class="n">y_pred</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">definition</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">heads</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">activation</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">reuse_head</span> <span class="o">=</span> <span class="n">definition</span>
+            <span class="k">if</span> <span class="n">activation</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">activation</span> <span class="o">=</span> <span class="s2">&quot;linear&quot;</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">reuse_head</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">y_pred</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">Activation</span><span class="p">(</span><span class="n">activation</span><span class="p">)(</span><span class="n">y_pred</span><span class="p">[</span><span class="n">reuse_head</span><span class="p">]</span><span class="o">.</span><span class="n">_keras_history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">input</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">y_pred</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_head</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">activation</span><span class="p">)</span>
 
         <span class="n">optimizer</span> <span class="o">=</span> <span class="n">SGD</span><span class="p">(</span>
             <span class="n">learning_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s2">&quot;lr&quot;</span><span class="p">]</span>
@@ -243,20 +251,14 @@
             <span class="n">logits</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="DetMixin.get_head"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.DetMixin.html#bayes_covernet.tf.model.abstract_models.DetMixin.get_head">[docs]</a>    <span class="k">def</span> <span class="nf">get_head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logits</span><span class="p">,</span> <span class="n">num_modes</span><span class="p">,</span> <span class="n">is_classifier</span><span class="p">,</span> <span class="n">is_multilabel</span><span class="p">):</span>
+<div class="viewcode-block" id="DetMixin.get_head"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.DetMixin.html#bayes_covernet.tf.model.abstract_models.DetMixin.get_head">[docs]</a>    <span class="k">def</span> <span class="nf">get_head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logits</span><span class="p">,</span> <span class="n">num_modes</span><span class="p">,</span> <span class="n">activation</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">num_modes</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">):</span>
             <span class="n">logits</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">num_modes</span><span class="p">),</span> <span class="n">use_bias</span><span class="o">=</span><span class="kc">False</span><span class="p">)(</span><span class="n">logits</span><span class="p">)</span>
             <span class="n">logits</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">Reshape</span><span class="p">(</span><span class="n">num_modes</span><span class="p">)(</span><span class="n">logits</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">logits</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">num_modes</span><span class="p">,</span> <span class="n">use_bias</span><span class="o">=</span><span class="kc">False</span><span class="p">)(</span><span class="n">logits</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">is_classifier</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">is_multilabel</span><span class="p">:</span>
-                <span class="n">y_pred</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">logits</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">y_pred</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">logits</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">y_pred</span> <span class="o">=</span> <span class="n">logits</span>
+        <span class="n">y_pred</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">Activation</span><span class="p">(</span><span class="n">activation</span><span class="p">)(</span><span class="n">logits</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">y_pred</span></div></div>
 
@@ -397,7 +399,7 @@
         <span class="p">)(</span><span class="n">logits</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">logits</span></div>
 
-<div class="viewcode-block" id="VIMixin.get_head"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.VIMixin.html#bayes_covernet.tf.model.abstract_models.VIMixin.get_head">[docs]</a>    <span class="k">def</span> <span class="nf">get_head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logits</span><span class="p">,</span> <span class="n">num_modes</span><span class="p">,</span> <span class="n">is_classifier</span><span class="p">,</span> <span class="n">is_multilabel</span><span class="p">):</span>
+<div class="viewcode-block" id="VIMixin.get_head"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.VIMixin.html#bayes_covernet.tf.model.abstract_models.VIMixin.get_head">[docs]</a>    <span class="k">def</span> <span class="nf">get_head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logits</span><span class="p">,</span> <span class="n">num_modes</span><span class="p">,</span> <span class="n">activation</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">kernel_regularizer</span> <span class="o">=</span> <span class="n">init_kernel_regularizer</span><span class="p">(</span>
             <span class="n">ed2</span><span class="o">.</span><span class="n">regularizers</span><span class="o">.</span><span class="n">NormalKLDivergenceWithTiedMean</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;tied_mean&#39;</span><span class="p">]</span>
@@ -421,14 +423,7 @@
         <span class="p">)(</span><span class="n">logits</span><span class="p">)</span>
 
         <span class="n">logits</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">is_classifier</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">is_multilabel</span><span class="p">:</span>
-                <span class="n">y_pred</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">logits</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">y_pred</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">logits</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">y_pred</span> <span class="o">=</span> <span class="n">logits</span>
+        <span class="n">y_pred</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">Activation</span><span class="p">(</span><span class="n">activation</span><span class="p">)(</span><span class="n">logits</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">y_pred</span></div>
 
@@ -528,10 +523,10 @@
 
 <div class="viewcode-block" id="VIMixin.create_model"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.VIMixin.html#bayes_covernet.tf.model.abstract_models.VIMixin.create_model">[docs]</a>    <span class="k">def</span> <span class="nf">create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">):</span>
         <span class="c1">#=======================================================================</span>
-        <span class="c1"># outputs = {</span>
-        <span class="c1">#     k: layers.Activation(&#39;linear&#39;, dtype=&#39;float32&#39;)(v)</span>
-        <span class="c1">#     for k, v in outputs.items()</span>
-        <span class="c1"># }</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="n">layers</span><span class="o">.</span><span class="n">Activation</span><span class="p">(</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">k</span><span class="p">)(</span><span class="n">v</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">outputs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
         <span class="c1">#=======================================================================</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">)</span>
 

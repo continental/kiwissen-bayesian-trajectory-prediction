@@ -44,3 +44,17 @@ The provided software computes a trajectory prediction model under consideration
 - [Generalized Variational Continual Learning](https://openreview.net/pdf?id=_IM-AfFhna9)
 - [Transfer Learning](https://arxiv.org/abs/2006.04767)
 - [Multitask Learning](https://arxiv.org/abs/2006.04767)
+
+## Documentation
+
+For further help, see the API-documentation or contact the maintainers.
+
+## License
+
+Copyright (c) 2022 Continental Corporation. All rights reserved.
+
+This repository is licensed unter the BSD 3-Clause "New" or "Revised" license. See [LICENSE.txt](./LICENSE) for the full license text.
+
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md).

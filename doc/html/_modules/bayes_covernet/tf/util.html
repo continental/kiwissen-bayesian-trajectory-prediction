@@ -15,8 +15,10 @@
         <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
 </head>
@@ -38,8 +40,10 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../mdfiles.html">CHANGELOG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../mdfiles.html#bayesian-continual-learning-for-prior-knowledge-integration">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../apidoc.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">Code Structure</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../licenses.html">Licenses</a></li>
 </ul>
 
@@ -73,7 +77,7 @@
 
 <span class="sd">Copyright (c) 2021-2022 Continental AG.</span>
 
-<span class="sd">@author: Christian Wirth &lt;christian.2.wirth@continental-corporation.com&gt;</span>
+<span class="sd">@author: Christian Wirth</span>
 <span class="sd">&#39;&#39;&#39;</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
@@ -107,7 +111,7 @@
 <span class="kn">from</span> <span class="nn">tensorflow_probability.python.distributions</span> <span class="kn">import</span> <span class="n">mvn_diag</span> <span class="k">as</span> <span class="n">mvn_diag_lib</span>
 <span class="kn">from</span> <span class="nn">tensorflow_addons.metrics.utils</span> <span class="kn">import</span> <span class="n">MeanMetricWrapper</span>
 
-<div class="viewcode-block" id="TFSaver"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.TFSaver">[docs]</a><span class="k">class</span> <span class="nc">TFSaver</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">Callback</span><span class="p">):</span>
+<div class="viewcode-block" id="TFSaver"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.TFSaver.html#bayes_covernet.tf.util.TFSaver">[docs]</a><span class="k">class</span> <span class="nc">TFSaver</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">Callback</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Model saver using tensorflow checkpoint, instead of model save. Supports multiple metrics and keeps the last_n models per measure.</span>
 
@@ -130,7 +134,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span> <span class="k">if</span> <span class="n">is_min</span> <span class="k">else</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span> <span class="k">for</span> <span class="n">is_min</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_min</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">last_n</span> <span class="o">=</span> <span class="n">last_n</span>
 
-<div class="viewcode-block" id="TFSaver.on_epoch_end"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.TFSaver.on_epoch_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="TFSaver.on_epoch_end"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.TFSaver.html#bayes_covernet.tf.util.TFSaver.on_epoch_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">logs</span> <span class="o">=</span> <span class="n">logs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">logs</span><span class="p">[</span><span class="s1">&#39;epoch&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">epoch</span>
         <span class="n">current_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;Model_ep</span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s1">&#39;</span>
@@ -159,7 +163,7 @@
                             <span class="n">file</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span></div></div>
 
 
-<div class="viewcode-block" id="MaxMetricWrapper"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.MaxMetricWrapper">[docs]</a><span class="k">class</span> <span class="nc">MaxMetricWrapper</span><span class="p">(</span><span class="n">Metric</span><span class="p">):</span>
+<div class="viewcode-block" id="MaxMetricWrapper"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.MaxMetricWrapper.html#bayes_covernet.tf.util.MaxMetricWrapper">[docs]</a><span class="k">class</span> <span class="nc">MaxMetricWrapper</span><span class="p">(</span><span class="n">Metric</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Stores the max observed value</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -169,7 +173,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_weight</span><span class="p">(</span><span class="s1">&#39;max&#39;</span><span class="p">,</span> <span class="n">initializer</span><span class="o">=</span><span class="n">Constant</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fn</span> <span class="o">=</span> <span class="n">fn</span>
 
-<div class="viewcode-block" id="MaxMetricWrapper.update_state"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.MaxMetricWrapper.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="MaxMetricWrapper.update_state"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.MaxMetricWrapper.html#bayes_covernet.tf.util.MaxMetricWrapper.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fn</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
             <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span>
@@ -178,11 +182,11 @@
             <span class="p">)</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="MaxMetricWrapper.result"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.MaxMetricWrapper.result">[docs]</a>    <span class="k">def</span> <span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="MaxMetricWrapper.result"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.MaxMetricWrapper.html#bayes_covernet.tf.util.MaxMetricWrapper.result">[docs]</a>    <span class="k">def</span> <span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span></div></div>
 
 
-<div class="viewcode-block" id="MinMetricWrapper"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.MinMetricWrapper">[docs]</a><span class="k">class</span> <span class="nc">MinMetricWrapper</span><span class="p">(</span><span class="n">Metric</span><span class="p">):</span>
+<div class="viewcode-block" id="MinMetricWrapper"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.MinMetricWrapper.html#bayes_covernet.tf.util.MinMetricWrapper">[docs]</a><span class="k">class</span> <span class="nc">MinMetricWrapper</span><span class="p">(</span><span class="n">Metric</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Stores the min observed value</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -192,7 +196,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_weight</span><span class="p">(</span><span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="n">initializer</span><span class="o">=</span><span class="n">Constant</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fn</span> <span class="o">=</span> <span class="n">fn</span>
 
-<div class="viewcode-block" id="MinMetricWrapper.update_state"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.MinMetricWrapper.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="MinMetricWrapper.update_state"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.MinMetricWrapper.html#bayes_covernet.tf.util.MinMetricWrapper.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fn</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
             <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span>
@@ -201,11 +205,11 @@
             <span class="p">)</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="MinMetricWrapper.result"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.MinMetricWrapper.result">[docs]</a>    <span class="k">def</span> <span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="MinMetricWrapper.result"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.MinMetricWrapper.html#bayes_covernet.tf.util.MinMetricWrapper.result">[docs]</a>    <span class="k">def</span> <span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">min</span></div></div>
 
 
-<div class="viewcode-block" id="LastMetricWrapper"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.LastMetricWrapper">[docs]</a><span class="k">class</span> <span class="nc">LastMetricWrapper</span><span class="p">(</span><span class="n">Metric</span><span class="p">):</span>
+<div class="viewcode-block" id="LastMetricWrapper"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.LastMetricWrapper.html#bayes_covernet.tf.util.LastMetricWrapper">[docs]</a><span class="k">class</span> <span class="nc">LastMetricWrapper</span><span class="p">(</span><span class="n">Metric</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Stores the last observed value</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -215,16 +219,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_weight</span><span class="p">(</span><span class="s1">&#39;last&#39;</span><span class="p">,</span> <span class="n">initializer</span><span class="o">=</span><span class="n">Constant</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fn</span> <span class="o">=</span> <span class="n">fn</span>
 
-<div class="viewcode-block" id="LastMetricWrapper.update_state"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.LastMetricWrapper.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="LastMetricWrapper.update_state"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.LastMetricWrapper.html#bayes_covernet.tf.util.LastMetricWrapper.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fn</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">last</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="LastMetricWrapper.result"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.LastMetricWrapper.result">[docs]</a>    <span class="k">def</span> <span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="LastMetricWrapper.result"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.LastMetricWrapper.html#bayes_covernet.tf.util.LastMetricWrapper.result">[docs]</a>    <span class="k">def</span> <span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">last</span></div></div>
 
-<div class="viewcode-block" id="MultiOutputMeanMetricWrapper"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.MultiOutputMeanMetricWrapper">[docs]</a><span class="k">class</span> <span class="nc">MultiOutputMeanMetricWrapper</span><span class="p">(</span><span class="n">MeanMetricWrapper</span><span class="p">):</span>
+<div class="viewcode-block" id="MultiOutputMeanMetricWrapper"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.MultiOutputMeanMetricWrapper.html#bayes_covernet.tf.util.MultiOutputMeanMetricWrapper">[docs]</a><span class="k">class</span> <span class="nc">MultiOutputMeanMetricWrapper</span><span class="p">(</span><span class="n">MeanMetricWrapper</span><span class="p">):</span>
 
-<div class="viewcode-block" id="MultiOutputMeanMetricWrapper.update_state"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.MultiOutputMeanMetricWrapper.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="MultiOutputMeanMetricWrapper.update_state"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.MultiOutputMeanMetricWrapper.html#bayes_covernet.tf.util.MultiOutputMeanMetricWrapper.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span><span class="nb">list</span><span class="p">):</span>
             <span class="n">y_true</span> <span class="o">=</span> <span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">y_t</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="p">)</span> <span class="k">for</span> <span class="n">y_t</span> <span class="ow">in</span> <span class="n">y_true</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
@@ -239,7 +243,7 @@
         <span class="n">matches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_fn_kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">Mean</span><span class="o">.</span><span class="n">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">matches</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="n">sample_weight</span><span class="p">)</span></div></div>
     
-<div class="viewcode-block" id="CollectingMetricWrapper"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.CollectingMetricWrapper">[docs]</a><span class="k">class</span> <span class="nc">CollectingMetricWrapper</span><span class="p">(</span><span class="n">Metric</span><span class="p">):</span>
+<div class="viewcode-block" id="CollectingMetricWrapper"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.CollectingMetricWrapper.html#bayes_covernet.tf.util.CollectingMetricWrapper">[docs]</a><span class="k">class</span> <span class="nc">CollectingMetricWrapper</span><span class="p">(</span><span class="n">Metric</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Metric that collects scalar values per instance.</span>
 
@@ -261,7 +265,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">fn</span> <span class="o">=</span> <span class="n">fn</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
 
-<div class="viewcode-block" id="CollectingMetricWrapper.update_state"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.CollectingMetricWrapper.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="CollectingMetricWrapper.update_state"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.CollectingMetricWrapper.html#bayes_covernet.tf.util.CollectingMetricWrapper.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span><span class="nb">list</span><span class="p">):</span>
             <span class="n">y_true</span> <span class="o">=</span> <span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">y_t</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="p">)</span> <span class="k">for</span> <span class="n">y_t</span> <span class="ow">in</span> <span class="n">y_true</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
@@ -284,14 +288,14 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">used_values</span><span class="o">.</span><span class="n">assign_add</span><span class="p">(</span><span class="n">count</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CollectingMetricWrapper.reset_state"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.CollectingMetricWrapper.reset_state">[docs]</a>    <span class="k">def</span> <span class="nf">reset_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="CollectingMetricWrapper.reset_state"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.CollectingMetricWrapper.html#bayes_covernet.tf.util.CollectingMetricWrapper.reset_state">[docs]</a>    <span class="k">def</span> <span class="nf">reset_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">used_values</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CollectingMetricWrapper.result"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.CollectingMetricWrapper.result">[docs]</a>    <span class="k">def</span> <span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">used_values</span><span class="p">]</span></div></div>
+<div class="viewcode-block" id="CollectingMetricWrapper.result"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.CollectingMetricWrapper.html#bayes_covernet.tf.util.CollectingMetricWrapper.result">[docs]</a>    <span class="k">def</span> <span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">used_values</span><span class="p">])</span></div></div>
 
 
-<div class="viewcode-block" id="TensorBoardMod"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.TensorBoardMod">[docs]</a><span class="k">class</span> <span class="nc">TensorBoardMod</span><span class="p">(</span><span class="n">TensorBoard</span><span class="p">):</span>
+<div class="viewcode-block" id="TensorBoardMod"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.TensorBoardMod.html#bayes_covernet.tf.util.TensorBoardMod">[docs]</a><span class="k">class</span> <span class="nc">TensorBoardMod</span><span class="p">(</span><span class="n">TensorBoard</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Tensorboard with explicit test writer and histogram plotting.</span>
 
@@ -304,7 +308,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">is_test</span> <span class="o">=</span> <span class="n">is_test</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">=</span> <span class="n">epoch</span>
 
-<div class="viewcode-block" id="TensorBoardMod.set_model"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.TensorBoardMod.set_model">[docs]</a>    <span class="k">def</span> <span class="nf">set_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+<div class="viewcode-block" id="TensorBoardMod.set_model"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.TensorBoardMod.html#bayes_covernet.tf.util.TensorBoardMod.set_model">[docs]</a>    <span class="k">def</span> <span class="nf">set_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Sets Keras model and writes graph if specified.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_log_write_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_log_write_dir</span><span class="p">()</span>
@@ -370,11 +374,11 @@
                         <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="p">[</span><span class="mi">4</span><span class="p">:]</span>  <span class="c1"># Remove &#39;val_&#39; prefix.</span>
                         <span class="n">summary_ops_v2</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">epoch</span><span class="p">)</span>
 
-<div class="viewcode-block" id="TensorBoardMod.on_test_begin"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.TensorBoardMod.on_test_begin">[docs]</a>    <span class="k">def</span> <span class="nf">on_test_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="TensorBoardMod.on_test_begin"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.TensorBoardMod.html#bayes_covernet.tf.util.TensorBoardMod.on_test_begin">[docs]</a>    <span class="k">def</span> <span class="nf">on_test_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_test</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_push_writer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_test_writer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_step</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="TensorBoardMod.on_test_end"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.TensorBoardMod.on_test_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_test_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="TensorBoardMod.on_test_end"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.TensorBoardMod.html#bayes_covernet.tf.util.TensorBoardMod.on_test_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_test_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">is_test</span>
             <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">optimizer</span>
@@ -390,7 +394,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_pop_writer</span><span class="p">()</span></div></div>
 
 
-<div class="viewcode-block" id="ConstantWarmup"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.ConstantWarmup">[docs]</a><span class="k">class</span> <span class="nc">ConstantWarmup</span><span class="p">(</span><span class="n">LearningRateSchedule</span><span class="p">):</span>
+<div class="viewcode-block" id="ConstantWarmup"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.ConstantWarmup.html#bayes_covernet.tf.util.ConstantWarmup">[docs]</a><span class="k">class</span> <span class="nc">ConstantWarmup</span><span class="p">(</span><span class="n">LearningRateSchedule</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Constant learning rate warmup</span>
 
@@ -413,7 +417,7 @@
             <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_learning_rate</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="ConstantWarmup.__call__"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.ConstantWarmup.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+<div class="viewcode-block" id="ConstantWarmup.__call__"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.ConstantWarmup.html#bayes_covernet.tf.util.ConstantWarmup.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
         <span class="n">lr</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span>
             <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">warmup_steps</span><span class="p">,</span>
             <span class="n">true_fn</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">warmup_learning_rate</span><span class="p">,</span>
@@ -423,11 +427,11 @@
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">lr</span></div>
 
-<div class="viewcode-block" id="ConstantWarmup.get_config"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.ConstantWarmup.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ConstantWarmup.get_config"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.ConstantWarmup.html#bayes_covernet.tf.util.ConstantWarmup.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;warmup_steps&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">warmup_steps</span><span class="p">,</span> <span class="s2">&quot;schedule&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="p">}</span></div></div>
 
 
-<div class="viewcode-block" id="PolynomialWarmup"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.PolynomialWarmup">[docs]</a><span class="k">class</span> <span class="nc">PolynomialWarmup</span><span class="p">(</span><span class="n">LearningRateSchedule</span><span class="p">):</span>
+<div class="viewcode-block" id="PolynomialWarmup"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.PolynomialWarmup.html#bayes_covernet.tf.util.PolynomialWarmup">[docs]</a><span class="k">class</span> <span class="nc">PolynomialWarmup</span><span class="p">(</span><span class="n">LearningRateSchedule</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Polynomial learning rate increase for warmup.</span>
 
@@ -446,7 +450,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">warmup_steps</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">warmup_steps</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">trainable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">warmup_learning_rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_learning_rate</span>
 
-<div class="viewcode-block" id="PolynomialWarmup.__call__"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.PolynomialWarmup.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+<div class="viewcode-block" id="PolynomialWarmup.__call__"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.PolynomialWarmup.html#bayes_covernet.tf.util.PolynomialWarmup.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
         <span class="k">def</span> <span class="nf">warmup</span><span class="p">():</span>
             <span class="n">progress</span> <span class="o">=</span> <span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">warmup_steps</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">warmup_learning_rate</span> <span class="o">*</span> <span class="n">tf</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">progress</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">power</span><span class="p">)</span>
@@ -460,7 +464,7 @@
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">lr</span></div>
 
-<div class="viewcode-block" id="PolynomialWarmup.get_config"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.PolynomialWarmup.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="PolynomialWarmup.get_config"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.PolynomialWarmup.html#bayes_covernet.tf.util.PolynomialWarmup.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;warmup_steps&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">warmup_steps</span><span class="p">,</span>
             <span class="s2">&quot;schedule&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="p">,</span>
@@ -468,7 +472,7 @@
         <span class="p">}</span></div></div>
 
 
-<div class="viewcode-block" id="CyclicalPowerLearningRate"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.CyclicalPowerLearningRate">[docs]</a><span class="k">class</span> <span class="nc">CyclicalPowerLearningRate</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">schedules</span><span class="o">.</span><span class="n">LearningRateSchedule</span><span class="p">):</span>
+<div class="viewcode-block" id="CyclicalPowerLearningRate"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.CyclicalPowerLearningRate.html#bayes_covernet.tf.util.CyclicalPowerLearningRate">[docs]</a><span class="k">class</span> <span class="nc">CyclicalPowerLearningRate</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">schedules</span><span class="o">.</span><span class="n">LearningRateSchedule</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A LearningRateSchedule that uses cyclical schedule, raised by a power term.</span>
 
 <span class="sd">    :param float initial_learning_rate: Minimal learning rate</span>
@@ -499,7 +503,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">scale_mode</span> <span class="o">=</span> <span class="n">scale_mode</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
 
-<div class="viewcode-block" id="CyclicalPowerLearningRate.__call__"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.CyclicalPowerLearningRate.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+<div class="viewcode-block" id="CyclicalPowerLearningRate.__call__"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.CyclicalPowerLearningRate.html#bayes_covernet.tf.util.CyclicalPowerLearningRate.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
         <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">name_scope</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">or</span> <span class="s2">&quot;CyclicalLearningRate&quot;</span><span class="p">):</span>
             <span class="n">initial_learning_rate</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">initial_learning_rate</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;initial_learning_rate&quot;</span>
@@ -522,7 +526,7 @@
                 <span class="n">mode_step</span>
             <span class="p">)</span></div>
 
-<div class="viewcode-block" id="CyclicalPowerLearningRate.get_config"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.CyclicalPowerLearningRate.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="CyclicalPowerLearningRate.get_config"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.CyclicalPowerLearningRate.html#bayes_covernet.tf.util.CyclicalPowerLearningRate.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;initial_learning_rate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_learning_rate</span><span class="p">,</span>
             <span class="s2">&quot;maximal_learning_rate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">maximal_learning_rate</span><span class="p">,</span>
@@ -532,7 +536,7 @@
         <span class="p">}</span></div></div>
 
 
-<div class="viewcode-block" id="DelayedEarlyStopping"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.DelayedEarlyStopping">[docs]</a><span class="k">class</span> <span class="nc">DelayedEarlyStopping</span><span class="p">(</span><span class="n">EarlyStopping</span><span class="p">):</span>
+<div class="viewcode-block" id="DelayedEarlyStopping"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.DelayedEarlyStopping.html#bayes_covernet.tf.util.DelayedEarlyStopping">[docs]</a><span class="k">class</span> <span class="nc">DelayedEarlyStopping</span><span class="p">(</span><span class="n">EarlyStopping</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    EarlyStopping that is only applied after an initial delay phase.</span>
 
@@ -543,12 +547,12 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">start_delay</span> <span class="o">=</span> <span class="n">start_delay</span>
 
-<div class="viewcode-block" id="DelayedEarlyStopping.on_epoch_end"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.DelayedEarlyStopping.on_epoch_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="DelayedEarlyStopping.on_epoch_end"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.DelayedEarlyStopping.html#bayes_covernet.tf.util.DelayedEarlyStopping.on_epoch_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">epoch</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_delay</span><span class="p">:</span>
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_epoch_end</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">logs</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="MultivariateNormalDiag"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.MultivariateNormalDiag">[docs]</a><span class="k">class</span> <span class="nc">MultivariateNormalDiag</span><span class="p">(</span><span class="n">DistributionLambda</span><span class="p">):</span>
+<div class="viewcode-block" id="MultivariateNormalDiag"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.MultivariateNormalDiag.html#bayes_covernet.tf.util.MultivariateNormalDiag">[docs]</a><span class="k">class</span> <span class="nc">MultivariateNormalDiag</span><span class="p">(</span><span class="n">DistributionLambda</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">event_shape</span><span class="p">,</span>
@@ -575,7 +579,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_convert_to_tensor_fn</span> <span class="o">=</span> <span class="n">convert_to_tensor_fn</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_validate_args</span> <span class="o">=</span> <span class="n">validate_args</span>
 
-<div class="viewcode-block" id="MultivariateNormalDiag.new"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.MultivariateNormalDiag.new">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="MultivariateNormalDiag.new"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.MultivariateNormalDiag.html#bayes_covernet.tf.util.MultivariateNormalDiag.new">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">new</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">event_shape</span><span class="o">=</span><span class="p">(),</span> <span class="n">validate_args</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Create the distribution instance from a `params` vector.&quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">name_scope</span><span class="p">(</span><span class="n">name</span> <span class="ow">or</span> <span class="s1">&#39;MultivariateNormalDiag&#39;</span><span class="p">):</span>
@@ -600,7 +604,7 @@
                 <span class="n">validate_args</span><span class="o">=</span><span class="n">validate_args</span><span class="p">,</span>
             <span class="p">)</span></div>
 
-<div class="viewcode-block" id="MultivariateNormalDiag.params_size"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.MultivariateNormalDiag.params_size">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="MultivariateNormalDiag.params_size"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.MultivariateNormalDiag.html#bayes_covernet.tf.util.MultivariateNormalDiag.params_size">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">params_size</span><span class="p">(</span><span class="n">event_shape</span><span class="o">=</span><span class="p">(),</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;The number of `params` needed to create a single distribution.&quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">name_scope</span><span class="p">(</span><span class="n">name</span> <span class="ow">or</span> <span class="s1">&#39;MultivariateNormalDiag_params_size&#39;</span><span class="p">):</span>
@@ -611,7 +615,7 @@
                 <span class="n">event_shape</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="ow">or</span> <span class="s1">&#39;MultivariateNormalDiag_params_size&#39;</span>
             <span class="p">)</span></div>
 
-<div class="viewcode-block" id="MultivariateNormalDiag.get_config"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.html#bayes_covernet.tf.util.MultivariateNormalDiag.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="MultivariateNormalDiag.get_config"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.util.MultivariateNormalDiag.html#bayes_covernet.tf.util.MultivariateNormalDiag.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 
         <span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s1">&#39;event_shape&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_shape</span><span class="p">,</span>

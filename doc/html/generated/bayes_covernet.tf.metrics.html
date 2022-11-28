@@ -16,6 +16,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="../about.html" />
@@ -42,7 +43,8 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../mdfiles.html">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mdfiles.html">CHANGELOG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mdfiles.html#bayesian-continual-learning-for-prior-knowledge-integration">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../apidoc.html">API Documentation</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="bayes_covernet.html">bayes_covernet</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="bayes_covernet.main.html">bayes_covernet.main</a></li>
@@ -92,11 +94,11 @@
            <div itemprop="articleBody">
              
   <section id="bayes-covernet-tf-metrics">
-<h1>bayes_covernet.tf.metrics<a class="headerlink" href="#bayes-covernet-tf-metrics" title="Permalink to this headline"></a></h1>
+<h1>bayes_covernet.tf.metrics<a class="headerlink" href="#bayes-covernet-tf-metrics" title="Permalink to this heading"></a></h1>
 <p class="rubric">Description</p>
 <span class="target" id="module-bayes_covernet.tf.metrics"></span><p>Additional metrics</p>
 <p>Copyright (c) 2021-2022 Continental AG.</p>
-<p>&#64;author: Christian Wirth &lt;<a class="reference external" href="mailto:christian&#46;2&#46;wirth&#37;&#52;&#48;continental-corporation&#46;com">christian<span>&#46;</span>2<span>&#46;</span>wirth<span>&#64;</span>continental-corporation<span>&#46;</span>com</a>&gt;</p>
+<p>&#64;author: Christian Wirth</p>
 <p class="rubric">Classes</p>
 <table class="autosummary longtable docutils align-default">
 <colgroup>
@@ -143,6 +145,12 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="bayes_covernet.tf.metrics.displacement_error.html#bayes_covernet.tf.metrics.displacement_error" title="bayes_covernet.tf.metrics.displacement_error"><code class="xref py py-obj docutils literal notranslate"><span class="pre">displacement_error</span></code></a>(y_true, y_pred[, ...])</p></td>
 <td><p>Determines the average and final displacement error (ADE/FDE).</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="bayes_covernet.tf.metrics.drivable_area_compliance.html#bayes_covernet.tf.metrics.drivable_area_compliance" title="bayes_covernet.tf.metrics.drivable_area_compliance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">drivable_area_compliance</span></code></a>(y_true, y_pred[, ...])</p></td>
+<td><p>Determines the drivable area compliance by counting all most likely predictions that are drivable.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="bayes_covernet.tf.metrics.hit_rate.html#bayes_covernet.tf.metrics.hit_rate" title="bayes_covernet.tf.metrics.hit_rate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hit_rate</span></code></a>(y_true, y_pred[, final_only, k, d, ...])</p></td>
+<td><p>Determines the hit rate of the average and final displacement error (ADE/FDE) given a distance d.</p></td>
+</tr>
 <tr class="row-even"><td><p><a class="reference internal" href="bayes_covernet.tf.metrics.kendall_tau.html#bayes_covernet.tf.metrics.kendall_tau" title="bayes_covernet.tf.metrics.kendall_tau"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kendall_tau</span></code></a>(y_true, y_pred[, mapper])</p></td>
 <td><p>Computes instance wise kendalls tau against a bipartite label ranking</p></td>
 </tr>
@@ -151,7 +159,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="bayes_covernet.tf.metrics.MappedBinaryAccuracy">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MappedBinaryAccuracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/metrics.html#MappedBinaryAccuracy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.metrics.MappedBinaryAccuracy" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">keras.metrics.BinaryAccuracy</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BinaryAccuracy</span></code></p>
 <p>BinaryAccuracy with a function that projects y_true, y_pred into a categorical space.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -192,7 +200,7 @@ functions reduce by 1 dimension, usually the last axis (-1)).</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="bayes_covernet.tf.metrics.MappedECE">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MappedECE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/metrics.html#MappedECE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.metrics.MappedECE" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">robustness_metrics.metrics.uncertainty._KerasECEMetric</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">_KerasECEMetric</span></code></p>
 <p>ECE with a function that projects y_true, y_pred into a categorical space.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -243,7 +251,7 @@ are expected to all be in [0, 1].</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="bayes_covernet.tf.metrics.MappedPrecision">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MappedPrecision</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/metrics.html#MappedPrecision"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.metrics.MappedPrecision" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">keras.metrics.Precision</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Precision</span></code></p>
 <p>Precision with a function that projects y_true, y_pred into a categorical space.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -276,7 +284,7 @@ be broadcastable to <cite>y_true</cite>.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="bayes_covernet.tf.metrics.MappedRecall">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MappedRecall</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/metrics.html#MappedRecall"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.metrics.MappedRecall" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">keras.metrics.Recall</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Recall</span></code></p>
 <p>Recall with a function that projects y_true, y_pred into a categorical space.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -309,7 +317,7 @@ be broadcastable to <cite>y_true</cite>.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="bayes_covernet.tf.metrics.MappedSparseCategoricalAccuracy">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MappedSparseCategoricalAccuracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/metrics.html#MappedSparseCategoricalAccuracy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.metrics.MappedSparseCategoricalAccuracy" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">keras.metrics.SparseCategoricalAccuracy</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">SparseCategoricalAccuracy</span></code></p>
 <p>SparseCategoricalAccuracy with a function that projects y_true, y_pred into a categorical space.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -439,6 +447,51 @@ functions reduce by 1 dimension, usually the last axis (-1)).</p>
 <li><p><strong>y_pred</strong> (<em>tf.Tensor</em>) – Predictions</p></li>
 <li><p><strong>final_only</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – FDE if True, ADE otherwise</p></li>
 <li><p><strong>k</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Consider k most probable predictions</p></li>
+<li><p><strong>mapper</strong> (<em>Callable</em><em>,</em><em>None</em>) – Function that projects y_true, y_pred into coordinate space.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Metric value per instance</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bayes_covernet.tf.metrics.drivable_area_compliance">
+<span class="sig-name descname"><span class="pre">drivable_area_compliance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mapper</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/metrics.html#drivable_area_compliance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.metrics.drivable_area_compliance" title="Permalink to this definition"></a></dt>
+<dd><p>Determines the drivable area compliance by counting all most likely predictions that are drivable. Projects</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_true</strong> (<em>tf.Tensor</em>) – Groundtruth</p></li>
+<li><p><strong>y_pred</strong> (<em>tf.Tensor</em>) – Predictions</p></li>
+<li><p><strong>mapper</strong> (<em>Callable</em><em>,</em><em>None</em>) – Function that projects y_true, y_pred into categorical space.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Metric value per instance</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="bayes_covernet.tf.metrics.hit_rate">
+<span class="sig-name descname"><span class="pre">hit_rate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mapper</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/metrics.html#hit_rate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.metrics.hit_rate" title="Permalink to this definition"></a></dt>
+<dd><p>Determines the hit rate of the average and final displacement error (ADE/FDE) given a distance d. Projects predictions and/or groundtruth into a coordinate space, if required.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_true</strong> (<em>tf.Tensor</em>) – Groundtruth</p></li>
+<li><p><strong>y_pred</strong> (<em>tf.Tensor</em>) – Predictions</p></li>
+<li><p><strong>final_only</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – FDE if True, ADE otherwise</p></li>
+<li><p><strong>k</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Consider k most probable predictions</p></li>
+<li><p><strong>d</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Cut-off distances for count as hit or miss</p></li>
 <li><p><strong>mapper</strong> (<em>Callable</em><em>,</em><em>None</em>) – Function that projects y_true, y_pred into coordinate space.</p></li>
 </ul>
 </dd>

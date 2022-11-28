@@ -16,12 +16,13 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="bayes_covernet.tf.fixes.update_state" href="bayes_covernet.tf.fixes.update_state.html" />
+    <link rel="next" title="bayes_covernet.tf.fixes.TensorflowFix" href="bayes_covernet.tf.fixes.TensorflowFix.html" />
     <link rel="prev" title="bayes_covernet.tf.dataloader.NuScenesDataLoader.read_cached_parameterized" href="bayes_covernet.tf.dataloader.NuScenesDataLoader.read_cached_parameterized.html" /> 
 </head>
 
@@ -42,7 +43,8 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../mdfiles.html">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mdfiles.html">CHANGELOG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mdfiles.html#bayesian-continual-learning-for-prior-knowledge-integration">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../apidoc.html">API Documentation</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="bayes_covernet.html">bayes_covernet</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="bayes_covernet.main.html">bayes_covernet.main</a></li>
@@ -92,11 +94,23 @@
            <div itemprop="articleBody">
              
   <section id="bayes-covernet-tf-fixes">
-<h1>bayes_covernet.tf.fixes<a class="headerlink" href="#bayes-covernet-tf-fixes" title="Permalink to this headline"></a></h1>
+<h1>bayes_covernet.tf.fixes<a class="headerlink" href="#bayes-covernet-tf-fixes" title="Permalink to this heading"></a></h1>
 <p class="rubric">Description</p>
 <span class="target" id="module-bayes_covernet.tf.fixes"></span><p>TrainableNormal distribution with non scalar scale values.</p>
 <p>Copyright (c) 2021-2022 Continental AG.</p>
-<p>&#64;author: Christian Wirth &lt;<a class="reference external" href="mailto:christian&#46;2&#46;wirth&#37;&#52;&#48;continental-corporation&#46;com">christian<span>&#46;</span>2<span>&#46;</span>wirth<span>&#64;</span>continental-corporation<span>&#46;</span>com</a>&gt;</p>
+<p>&#64;author: Christian Wirth</p>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="bayes_covernet.tf.fixes.TensorflowFix.html#bayes_covernet.tf.fixes.TensorflowFix" title="bayes_covernet.tf.fixes.TensorflowFix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TensorflowFix</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
 <p class="rubric">Functions</p>
 <table class="autosummary longtable docutils align-default">
 <colgroup>
@@ -109,6 +123,41 @@
 </tr>
 </tbody>
 </table>
+<dl class="py class">
+<dt class="sig sig-object py" id="bayes_covernet.tf.fixes.TensorflowFix">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TensorflowFix</span></span><a class="reference internal" href="../_modules/bayes_covernet/tf/fixes.html#TensorflowFix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.fixes.TensorflowFix" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_covernet.tf.fixes.TensorflowFix.on_train_batch_end">
+<span class="sig-name descname"><span class="pre">on_train_batch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/fixes.html#TensorflowFix.on_train_batch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.fixes.TensorflowFix.on_train_batch_end" title="Permalink to this definition"></a></dt>
+<dd><p>Called at the end of a training batch in <cite>fit</cite> methods.</p>
+<p>Subclasses should override for any actions to run.</p>
+<p>Note that if the <cite>steps_per_execution</cite> argument to <cite>compile</cite> in
+<cite>tf.keras.Model</cite> is set to <cite>N</cite>, this method will only be called every <cite>N</cite>
+batches.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>batch: Integer, index of batch within the current epoch.
+logs: Dict. Aggregated metric results up until this batch.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_covernet.tf.fixes.TensorflowFix.on_train_begin">
+<span class="sig-name descname"><span class="pre">on_train_begin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/fixes.html#TensorflowFix.on_train_begin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.fixes.TensorflowFix.on_train_begin" title="Permalink to this definition"></a></dt>
+<dd><p>Called at the beginning of training.</p>
+<p>Subclasses should override for any actions to run.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>logs: Dict. Currently no data is passed to this argument for this method</dt><dd><p>but that may change in the future.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="bayes_covernet.tf.fixes.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/fixes.html#__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.fixes.__call__" title="Permalink to this definition"></a></dt>
@@ -127,7 +176,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="bayes_covernet.tf.dataloader.NuScenesDataLoader.read_cached_parameterized.html" class="btn btn-neutral float-left" title="bayes_covernet.tf.dataloader.NuScenesDataLoader.read_cached_parameterized" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="bayes_covernet.tf.fixes.update_state.html" class="btn btn-neutral float-right" title="bayes_covernet.tf.fixes.update_state" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="bayes_covernet.tf.fixes.TensorflowFix.html" class="btn btn-neutral float-right" title="bayes_covernet.tf.fixes.TensorflowFix" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

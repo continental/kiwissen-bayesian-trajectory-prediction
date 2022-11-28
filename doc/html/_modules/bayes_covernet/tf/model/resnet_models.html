@@ -15,8 +15,10 @@
         <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
         <script src="../../../../_static/jquery.js"></script>
         <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../../_static/doctools.js"></script>
     <script src="../../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../../about.html" />
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" /> 
 </head>
@@ -38,8 +40,10 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../../readme.html">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../mdfiles.html">CHANGELOG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../mdfiles.html#bayesian-continual-learning-for-prior-knowledge-integration">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../apidoc.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../about.html">Code Structure</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../licenses.html">Licenses</a></li>
 </ul>
 
@@ -73,7 +77,7 @@
 
 <span class="sd">Copyright (c) 2021-2022 Continental AG.</span>
 
-<span class="sd">@author: Christian Wirth &lt;christian.2.wirth@continental-corporation.com&gt;</span>
+<span class="sd">@author: Christian Wirth</span>
 <span class="sd">&#39;&#39;&#39;</span>
 <span class="kn">from</span> <span class="nn">tensorflow.keras</span> <span class="kn">import</span> <span class="n">layers</span>
 <span class="kn">from</span> <span class="nn">tensorflow_addons.layers.adaptive_pooling</span> <span class="kn">import</span> <span class="n">AdaptiveAveragePooling2D</span>
@@ -85,7 +89,7 @@
     <span class="n">DetMixin</span><span class="p">,</span>
     <span class="n">SNGPMixin</span><span class="p">,</span>
     <span class="n">VIMixin</span><span class="p">,</span>
-    <span class="n">DetMVNMixin</span><span class="p">,</span>
+    <span class="n">DetMVNMixin</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">bayes_covernet.tf.model.resnet50_variational</span> <span class="kn">import</span> <span class="n">resnet50_variational</span>
 
@@ -176,6 +180,15 @@
             <span class="n">tied_mean_prior</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;tied_mean&#39;</span><span class="p">],</span>
             <span class="n">omit_last_layer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span>
+        <span class="k">return</span> <span class="n">backbone_mdl</span></div></div>
+
+<div class="viewcode-block" id="ResNet50VIHeadMixin"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.resnet_models.ResNet50VIHeadMixin.html#bayes_covernet.tf.model.resnet_models.ResNet50VIHeadMixin">[docs]</a><span class="k">class</span> <span class="nc">ResNet50VIHeadMixin</span><span class="p">(</span><span class="n">VIMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Variational ResNet50 model</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ResNet50VIHeadMixin.get_resnet50"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.resnet_models.ResNet50VIHeadMixin.html#bayes_covernet.tf.model.resnet_models.ResNet50VIHeadMixin.get_resnet50">[docs]</a>    <span class="k">def</span> <span class="nf">get_resnet50</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">):</span>
+        <span class="n">backbone_mdl</span> <span class="o">=</span> <span class="n">resnet50_deterministic</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">backbone_mdl</span></div></div>
 </pre></div>
 

@@ -1,6 +1,0 @@
-bayes\_covernet.pytorch.model.models.Covernet\_resnet
-=====================================================
-
-.. currentmodule:: bayes_covernet.pytorch.model.models
-
-.. autofunction:: Covernet_resnet

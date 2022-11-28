@@ -15,8 +15,10 @@
         <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
 </head>
@@ -38,8 +40,10 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../readme.html">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../mdfiles.html">CHANGELOG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../mdfiles.html#bayesian-continual-learning-for-prior-knowledge-integration">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../apidoc.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">Code Structure</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../licenses.html">Licenses</a></li>
 </ul>
 
@@ -73,7 +77,7 @@
 
 <span class="sd">Copyright (c) 2021-2022 Continental AG.</span>
 
-<span class="sd">@author: Christian Wirth &lt;christian.2.wirth@continental-corporation.com&gt;</span>
+<span class="sd">@author: Christian Wirth</span>
 <span class="sd">&#39;&#39;&#39;</span>
 <span class="kn">from</span> <span class="nn">robustness_metrics.metrics.uncertainty</span> <span class="kn">import</span> <span class="n">_KerasECEMetric</span>
 <span class="kn">from</span> <span class="nn">tensorflow.keras.metrics</span> <span class="kn">import</span> <span class="p">(</span>
@@ -86,7 +90,7 @@
 <span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
 <span class="kn">import</span> <span class="nn">tensorflow_probability</span> <span class="k">as</span> <span class="nn">tfp</span>
 
-<div class="viewcode-block" id="MappedSparseCategoricalAccuracy"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.html#bayes_covernet.tf.metrics.MappedSparseCategoricalAccuracy">[docs]</a><span class="k">class</span> <span class="nc">MappedSparseCategoricalAccuracy</span><span class="p">(</span><span class="n">SparseCategoricalAccuracy</span><span class="p">):</span>
+<div class="viewcode-block" id="MappedSparseCategoricalAccuracy"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.MappedSparseCategoricalAccuracy.html#bayes_covernet.tf.metrics.MappedSparseCategoricalAccuracy">[docs]</a><span class="k">class</span> <span class="nc">MappedSparseCategoricalAccuracy</span><span class="p">(</span><span class="n">SparseCategoricalAccuracy</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    SparseCategoricalAccuracy with a function that projects y_true, y_pred into a categorical space.</span>
 
@@ -97,13 +101,13 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span> <span class="o">=</span> <span class="n">mapper</span>
 
-<div class="viewcode-block" id="MappedSparseCategoricalAccuracy.update_state"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.html#bayes_covernet.tf.metrics.MappedSparseCategoricalAccuracy.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="MappedSparseCategoricalAccuracy.update_state"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.MappedSparseCategoricalAccuracy.html#bayes_covernet.tf.metrics.MappedSparseCategoricalAccuracy.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
         <span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">update_state</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="MappedBinaryAccuracy"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.html#bayes_covernet.tf.metrics.MappedBinaryAccuracy">[docs]</a><span class="k">class</span> <span class="nc">MappedBinaryAccuracy</span><span class="p">(</span><span class="n">BinaryAccuracy</span><span class="p">):</span>
+<div class="viewcode-block" id="MappedBinaryAccuracy"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.MappedBinaryAccuracy.html#bayes_covernet.tf.metrics.MappedBinaryAccuracy">[docs]</a><span class="k">class</span> <span class="nc">MappedBinaryAccuracy</span><span class="p">(</span><span class="n">BinaryAccuracy</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    BinaryAccuracy with a function that projects y_true, y_pred into a categorical space.</span>
 
@@ -114,13 +118,13 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span> <span class="o">=</span> <span class="n">mapper</span>
 
-<div class="viewcode-block" id="MappedBinaryAccuracy.update_state"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.html#bayes_covernet.tf.metrics.MappedBinaryAccuracy.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="MappedBinaryAccuracy.update_state"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.MappedBinaryAccuracy.html#bayes_covernet.tf.metrics.MappedBinaryAccuracy.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
         <span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">update_state</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="MappedPrecision"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.html#bayes_covernet.tf.metrics.MappedPrecision">[docs]</a><span class="k">class</span> <span class="nc">MappedPrecision</span><span class="p">(</span><span class="n">Precision</span><span class="p">):</span>
+<div class="viewcode-block" id="MappedPrecision"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.MappedPrecision.html#bayes_covernet.tf.metrics.MappedPrecision">[docs]</a><span class="k">class</span> <span class="nc">MappedPrecision</span><span class="p">(</span><span class="n">Precision</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Precision with a function that projects y_true, y_pred into a categorical space.</span>
 
@@ -131,13 +135,13 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span> <span class="o">=</span> <span class="n">mapper</span>
 
-<div class="viewcode-block" id="MappedPrecision.update_state"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.html#bayes_covernet.tf.metrics.MappedPrecision.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="MappedPrecision.update_state"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.MappedPrecision.html#bayes_covernet.tf.metrics.MappedPrecision.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
         <span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">update_state</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="MappedRecall"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.html#bayes_covernet.tf.metrics.MappedRecall">[docs]</a><span class="k">class</span> <span class="nc">MappedRecall</span><span class="p">(</span><span class="n">Recall</span><span class="p">):</span>
+<div class="viewcode-block" id="MappedRecall"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.MappedRecall.html#bayes_covernet.tf.metrics.MappedRecall">[docs]</a><span class="k">class</span> <span class="nc">MappedRecall</span><span class="p">(</span><span class="n">Recall</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Recall with a function that projects y_true, y_pred into a categorical space.</span>
 
@@ -148,13 +152,13 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span> <span class="o">=</span> <span class="n">mapper</span>
 
-<div class="viewcode-block" id="MappedRecall.update_state"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.html#bayes_covernet.tf.metrics.MappedRecall.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="MappedRecall.update_state"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.MappedRecall.html#bayes_covernet.tf.metrics.MappedRecall.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
         <span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">update_state</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="MappedECE"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.html#bayes_covernet.tf.metrics.MappedECE">[docs]</a><span class="k">class</span> <span class="nc">MappedECE</span><span class="p">(</span><span class="n">_KerasECEMetric</span><span class="p">):</span>
+<div class="viewcode-block" id="MappedECE"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.MappedECE.html#bayes_covernet.tf.metrics.MappedECE">[docs]</a><span class="k">class</span> <span class="nc">MappedECE</span><span class="p">(</span><span class="n">_KerasECEMetric</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    ECE with a function that projects y_true, y_pred into a categorical space.</span>
 
@@ -165,15 +169,15 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span> <span class="o">=</span> <span class="n">mapper</span>
 
-<div class="viewcode-block" id="MappedECE.update_state"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.html#bayes_covernet.tf.metrics.MappedECE.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="MappedECE.update_state"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.MappedECE.html#bayes_covernet.tf.metrics.MappedECE.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
         <span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">update_state</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="MappedECE.reset_state"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.html#bayes_covernet.tf.metrics.MappedECE.reset_state">[docs]</a>    <span class="k">def</span> <span class="nf">reset_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="MappedECE.reset_state"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.MappedECE.html#bayes_covernet.tf.metrics.MappedECE.reset_state">[docs]</a>    <span class="k">def</span> <span class="nf">reset_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span></div></div>
         
-<div class="viewcode-block" id="convert_to_rank"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.html#bayes_covernet.tf.metrics.convert_to_rank">[docs]</a><span class="k">def</span> <span class="nf">convert_to_rank</span><span class="p">(</span><span class="n">y_pred</span><span class="p">):</span>
+<div class="viewcode-block" id="convert_to_rank"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.convert_to_rank.html#bayes_covernet.tf.metrics.convert_to_rank">[docs]</a><span class="k">def</span> <span class="nf">convert_to_rank</span><span class="p">(</span><span class="n">y_pred</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convertes the continuous probability values into a list of rankings</span>
 
@@ -200,7 +204,7 @@
     <span class="k">return</span> <span class="n">ranks</span></div>
 
 
-<div class="viewcode-block" id="class_nll"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.html#bayes_covernet.tf.metrics.class_nll">[docs]</a><span class="k">def</span> <span class="nf">class_nll</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">cls_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="class_nll"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.class_nll.html#bayes_covernet.tf.metrics.class_nll">[docs]</a><span class="k">def</span> <span class="nf">class_nll</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">cls_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Computes the negative log likelihood for observing any label with cls_idx.</span>
 
@@ -223,7 +227,7 @@
     <span class="k">return</span> <span class="o">-</span><span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">y_pred</span> <span class="o">+</span> <span class="mf">1e-8</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="bipartition_error"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.html#bayes_covernet.tf.metrics.bipartition_error">[docs]</a><span class="k">def</span> <span class="nf">bipartition_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="bipartition_error"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.bipartition_error.html#bayes_covernet.tf.metrics.bipartition_error">[docs]</a><span class="k">def</span> <span class="nf">bipartition_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Computes the optimal bipartiton error, by finding a biaprtitation sorting threshold and counting the relative errors</span>
 
@@ -267,7 +271,7 @@
     <span class="k">return</span> <span class="n">error</span></div>
 
 
-<div class="viewcode-block" id="kendall_tau"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.html#bayes_covernet.tf.metrics.kendall_tau">[docs]</a><span class="k">def</span> <span class="nf">kendall_tau</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="kendall_tau"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.kendall_tau.html#bayes_covernet.tf.metrics.kendall_tau">[docs]</a><span class="k">def</span> <span class="nf">kendall_tau</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Computes instance wise kendalls tau against a bipartite label ranking</span>
 
@@ -298,7 +302,7 @@
     <span class="k">return</span> <span class="n">kendall</span></div>
 
 
-<div class="viewcode-block" id="displacement_error"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.html#bayes_covernet.tf.metrics.displacement_error">[docs]</a><span class="k">def</span> <span class="nf">displacement_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">final_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="displacement_error"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.displacement_error.html#bayes_covernet.tf.metrics.displacement_error">[docs]</a><span class="k">def</span> <span class="nf">displacement_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">final_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Determines the average and final displacement error (ADE/FDE). Projects predictions and/or groundtruth into a coordinate space, if required.</span>
 
@@ -325,8 +329,37 @@
 
     <span class="k">return</span> <span class="n">result</span></div>
 
+<div class="viewcode-block" id="hit_rate"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.hit_rate.html#bayes_covernet.tf.metrics.hit_rate">[docs]</a><span class="k">def</span> <span class="nf">hit_rate</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">final_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determines the hit rate of the average and final displacement error (ADE/FDE) given a distance d. Projects predictions and/or groundtruth into a coordinate space, if required.</span>
 
-<div class="viewcode-block" id="class_rank"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.html#bayes_covernet.tf.metrics.class_rank">[docs]</a><span class="k">def</span> <span class="nf">class_rank</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="sd">    :param tf.Tensor y_true: Groundtruth</span>
+<span class="sd">    :param tf.Tensor y_pred: Predictions</span>
+<span class="sd">    :param bool final_only: FDE if True, ADE otherwise</span>
+<span class="sd">    :param int k: Consider k most probable predictions</span>
+<span class="sd">    :param float d: Cut-off distances for count as hit or miss</span>
+<span class="sd">    :param Callable,None mapper: Function that projects y_true, y_pred into coordinate space.</span>
+<span class="sd">    :return: Metric value per instance</span>
+<span class="sd">    :rtype: tf.Tensor</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">mapper</span><span class="p">:</span>
+        <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span> <span class="o">=</span> <span class="n">mapper</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">y_pred</span><span class="p">[:,</span> <span class="p">:</span><span class="n">k</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">final_only</span><span class="p">:</span>
+        <span class="n">y_true</span> <span class="o">=</span> <span class="n">y_true</span><span class="p">[:,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="n">y_pred</span> <span class="o">=</span> <span class="n">y_pred</span><span class="p">[:,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">:]</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_max</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_min</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">less_equal</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">d</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="c1"># type setting!</span>
+
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="class_rank"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.class_rank.html#bayes_covernet.tf.metrics.class_rank">[docs]</a><span class="k">def</span> <span class="nf">class_rank</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Determines the rank of the groundtruth trajectory wrt. the predicted trajectories. Projects predictions and/or groundtruth into a categorical space, if required</span>
 
@@ -345,6 +378,24 @@
     <span class="n">result</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">ranks</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">batch_dims</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 
+    <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="drivable_area_compliance"><a class="viewcode-back" href="../../../generated/bayes_covernet.tf.metrics.drivable_area_compliance.html#bayes_covernet.tf.metrics.drivable_area_compliance">[docs]</a><span class="k">def</span> <span class="nf">drivable_area_compliance</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determines the drivable area compliance by counting all most likely predictions that are drivable. Projects </span>
+
+<span class="sd">    :param tf.Tensor y_true: Groundtruth</span>
+<span class="sd">    :param tf.Tensor y_pred: Predictions</span>
+<span class="sd">    :param Callable,None mapper: Function that projects y_true, y_pred into categorical space.</span>
+<span class="sd">    :return: Metric value per instance</span>
+<span class="sd">    :rtype: tf.Tensor</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">mapper</span><span class="p">:</span>
+        <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span> <span class="o">=</span> <span class="n">mapper</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+
+    <span class="c1">#result = tf.reduce_sum(tf.gather(y_true, tf.argmax(y_pred,axis=1), axis=1, batch_dims=1))/tf.cast(tf.shape(y_pred)[0], tf.float32)# n_onroad/n_pred</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">batch_dims</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    
     <span class="k">return</span> <span class="n">result</span></div>
 </pre></div>
 

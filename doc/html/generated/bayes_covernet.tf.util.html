@@ -16,6 +16,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="../about.html" />
@@ -42,7 +43,8 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../mdfiles.html">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mdfiles.html">CHANGELOG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mdfiles.html#bayesian-continual-learning-for-prior-knowledge-integration">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../apidoc.html">API Documentation</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="bayes_covernet.html">bayes_covernet</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="bayes_covernet.main.html">bayes_covernet.main</a></li>
@@ -92,11 +94,11 @@
            <div itemprop="articleBody">
              
   <section id="bayes-covernet-tf-util">
-<h1>bayes_covernet.tf.util<a class="headerlink" href="#bayes-covernet-tf-util" title="Permalink to this headline"></a></h1>
+<h1>bayes_covernet.tf.util<a class="headerlink" href="#bayes-covernet-tf-util" title="Permalink to this heading"></a></h1>
 <p class="rubric">Description</p>
 <span class="target" id="module-bayes_covernet.tf.util"></span><p>Tensorflow utility functions</p>
 <p>Copyright (c) 2021-2022 Continental AG.</p>
-<p>&#64;author: Christian Wirth &lt;<a class="reference external" href="mailto:christian&#46;2&#46;wirth&#37;&#52;&#48;continental-corporation&#46;com">christian<span>&#46;</span>2<span>&#46;</span>wirth<span>&#64;</span>continental-corporation<span>&#46;</span>com</a>&gt;</p>
+<p>&#64;author: Christian Wirth</p>
 <p class="rubric">Classes</p>
 <table class="autosummary longtable docutils align-default">
 <colgroup>
@@ -145,7 +147,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="bayes_covernet.tf.util.CollectingMetricWrapper">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CollectingMetricWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/util.html#CollectingMetricWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.util.CollectingMetricWrapper" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">keras.metrics.Metric</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Metric</span></code></p>
 <p>Metric that collects scalar values per instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -203,7 +205,7 @@ eager execution.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="bayes_covernet.tf.util.ConstantWarmup">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ConstantWarmup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schedule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warmup_steps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/util.html#ConstantWarmup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.util.ConstantWarmup" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">keras.optimizer_v2.learning_rate_schedule.LearningRateSchedule</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">LearningRateSchedule</span></code></p>
 <p>Constant learning rate warmup</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -229,7 +231,7 @@ eager execution.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="bayes_covernet.tf.util.CyclicalPowerLearningRate">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CyclicalPowerLearningRate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_learning_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maximal_learning_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">power</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cycle'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CyclicalLearningRate'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/util.html#CyclicalPowerLearningRate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.util.CyclicalPowerLearningRate" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">keras.optimizer_v2.learning_rate_schedule.LearningRateSchedule</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">LearningRateSchedule</span></code></p>
 <p>A LearningRateSchedule that uses cyclical schedule, raised by a power term.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -260,7 +262,7 @@ eager execution.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="bayes_covernet.tf.util.DelayedEarlyStopping">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DelayedEarlyStopping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_delay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/util.html#DelayedEarlyStopping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.util.DelayedEarlyStopping" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">keras.callbacks.EarlyStopping</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">EarlyStopping</span></code></p>
 <p>EarlyStopping that is only applied after an initial delay phase.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -295,7 +297,7 @@ are prefixed with <cite>val_</cite>. For training epoch, the values of the</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="bayes_covernet.tf.util.LastMetricWrapper">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">LastMetricWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/util.html#LastMetricWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.util.LastMetricWrapper" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">keras.metrics.Metric</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Metric</span></code></p>
 <p>Stores the last observed value</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="bayes_covernet.tf.util.LastMetricWrapper.result">
@@ -334,7 +336,7 @@ eager execution.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="bayes_covernet.tf.util.MaxMetricWrapper">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MaxMetricWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/util.html#MaxMetricWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.util.MaxMetricWrapper" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">keras.metrics.Metric</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Metric</span></code></p>
 <p>Stores the max observed value</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="bayes_covernet.tf.util.MaxMetricWrapper.result">
@@ -373,7 +375,7 @@ eager execution.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="bayes_covernet.tf.util.MinMetricWrapper">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MinMetricWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/util.html#MinMetricWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.util.MinMetricWrapper" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">keras.metrics.Metric</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Metric</span></code></p>
 <p>Stores the min observed value</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="bayes_covernet.tf.util.MinMetricWrapper.result">
@@ -412,7 +414,7 @@ eager execution.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="bayes_covernet.tf.util.MultiOutputMeanMetricWrapper">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultiOutputMeanMetricWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/util.html#MultiOutputMeanMetricWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.util.MultiOutputMeanMetricWrapper" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow_addons.metrics.utils.MeanMetricWrapper</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">MeanMetricWrapper</span></code></p>
 <p>Creates a <cite>MeanMetricWrapper</cite> instance.
 Args:</p>
 <blockquote>
@@ -450,7 +452,7 @@ sample_weight: Optional weighting of each example. Defaults to 1.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="bayes_covernet.tf.util.MultivariateNormalDiag">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultivariateNormalDiag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/util.html#MultivariateNormalDiag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.util.MultivariateNormalDiag" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow_probability.python.layers.distribution_layer.DistributionLambda</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">DistributionLambda</span></code></p>
 <p>Create a <cite>DistributionLambda</cite> Keras layer.</p>
 <dl>
 <dt>Args:</dt><dd><dl class="simple">
@@ -518,7 +520,7 @@ are serialized as numpy arrays.)</p></li>
 <dl class="py class">
 <dt class="sig sig-object py" id="bayes_covernet.tf.util.PolynomialWarmup">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PolynomialWarmup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schedule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warmup_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">power</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/util.html#PolynomialWarmup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.util.PolynomialWarmup" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">keras.optimizer_v2.learning_rate_schedule.LearningRateSchedule</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">LearningRateSchedule</span></code></p>
 <p>Polynomial learning rate increase for warmup.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -545,7 +547,7 @@ are serialized as numpy arrays.)</p></li>
 <dl class="py class">
 <dt class="sig sig-object py" id="bayes_covernet.tf.util.TFSaver">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TFSaver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measures</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['epoch']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[False]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/util.html#TFSaver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.util.TFSaver" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">keras.callbacks.Callback</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></p>
 <p>Model saver using tensorflow checkpoint, instead of model save. Supports multiple metrics and keeps the last_n models per measure.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -587,7 +589,7 @@ are prefixed with <cite>val_</cite>. For training epoch, the values of the</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="bayes_covernet.tf.util.TensorBoardMod">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TensorBoardMod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/util.html#TensorBoardMod"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.util.TensorBoardMod" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">keras.callbacks.TensorBoard</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TensorBoard</span></code></p>
 <p>Tensorboard with explicit test writer and histogram plotting.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>

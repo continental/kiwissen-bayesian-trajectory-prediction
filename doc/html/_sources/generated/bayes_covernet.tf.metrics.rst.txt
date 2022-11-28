@@ -60,6 +60,10 @@ bayes\_covernet.tf.metrics
         
         ~displacement_error
         
+        ~drivable_area_compliance
+        
+        ~hit_rate
+        
         ~kendall_tau
         
 

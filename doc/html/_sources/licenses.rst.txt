@@ -1,3 +1,3 @@
 Licenses
 ========
-.. mdinclude:: ../../LICENSES.md
+.. include:: ../../LICENSE

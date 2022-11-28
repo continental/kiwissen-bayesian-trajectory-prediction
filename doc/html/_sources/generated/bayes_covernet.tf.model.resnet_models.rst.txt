@@ -31,6 +31,8 @@ bayes\_covernet.tf.model.resnet\_models
         
         ~ResNet50SNGPMixin
         
+        ~ResNet50VIHeadMixin
+        
         ~ResNet50VIMixin
         
 

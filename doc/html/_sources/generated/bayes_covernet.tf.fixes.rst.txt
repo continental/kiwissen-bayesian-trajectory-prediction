@@ -17,6 +17,16 @@ bayes\_covernet.tf.fixes
 
     
     
+    .. rubric:: Classes
+
+    .. autosummary::
+        :toctree:
+        :nosignatures:
+        
+        ~TensorflowFix
+        
+
+    
     
 
 

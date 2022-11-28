@@ -1,0 +1,13 @@
+bayes\_covernet.tf.fixes.TensorflowFix
+======================================
+
+.. currentmodule:: bayes_covernet.tf.fixes
+
+.. autoclass:: TensorflowFix
+   :members:
+   :show-inheritance:
+   :private-members:
+   :undoc-members:
+   :inherited-members:
+   
+   .. autoclasstoc::
