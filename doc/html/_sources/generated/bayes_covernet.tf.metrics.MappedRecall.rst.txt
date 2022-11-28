@@ -1,0 +1,13 @@
+bayes\_covernet.tf.metrics.MappedRecall
+=======================================
+
+.. currentmodule:: bayes_covernet.tf.metrics
+
+.. autoclass:: MappedRecall
+   :members:
+   :show-inheritance:
+   :private-members:
+   :undoc-members:
+   :inherited-members:
+   
+   .. autoclasstoc::

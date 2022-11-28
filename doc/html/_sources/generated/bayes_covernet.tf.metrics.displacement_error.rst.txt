@@ -1,0 +1,6 @@
+bayes\_covernet.tf.metrics.displacement\_error
+==============================================
+
+.. currentmodule:: bayes_covernet.tf.metrics
+
+.. autofunction:: displacement_error

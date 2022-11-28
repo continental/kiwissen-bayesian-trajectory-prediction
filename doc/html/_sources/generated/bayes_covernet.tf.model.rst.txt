@@ -1,0 +1,52 @@
+bayes\_covernet.tf.model
+========================
+    
+.. rubric:: Description
+
+.. automodule:: bayes_covernet.tf.model
+   
+    
+    
+    .. rubric:: Sub-modules
+
+    .. autosummary::
+        :toctree:
+        :recursive:
+        
+        ~bayes_covernet.tf.model.abstract_models
+        
+        ~bayes_covernet.tf.model.covernet_utils
+        
+        ~bayes_covernet.tf.model.models
+        
+        ~bayes_covernet.tf.model.resnet50_variational
+        
+        ~bayes_covernet.tf.model.resnet_models
+        
+        ~bayes_covernet.tf.model.training
+        
+        ~bayes_covernet.tf.model.variational
+        
+
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    

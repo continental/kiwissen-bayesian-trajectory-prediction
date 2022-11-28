@@ -1,0 +1,13 @@
+bayes\_covernet.tf.metrics.MappedBinaryAccuracy
+===============================================
+
+.. currentmodule:: bayes_covernet.tf.metrics
+
+.. autoclass:: MappedBinaryAccuracy
+   :members:
+   :show-inheritance:
+   :private-members:
+   :undoc-members:
+   :inherited-members:
+   
+   .. autoclasstoc::

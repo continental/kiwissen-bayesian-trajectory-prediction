@@ -1,0 +1,62 @@
+bayes\_covernet.tf.util
+=======================
+    
+.. rubric:: Description
+
+.. automodule:: bayes_covernet.tf.util
+   
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    .. rubric:: Classes
+
+    .. autosummary::
+        :toctree:
+        :nosignatures:
+        
+        ~CollectingMetricWrapper
+        
+        ~ConstantWarmup
+        
+        ~CyclicalPowerLearningRate
+        
+        ~DelayedEarlyStopping
+        
+        ~LastMetricWrapper
+        
+        ~MaxMetricWrapper
+        
+        ~MinMetricWrapper
+        
+        ~MultiOutputMeanMetricWrapper
+        
+        ~MultivariateNormalDiag
+        
+        ~PolynomialWarmup
+        
+        ~TFSaver
+        
+        ~TensorBoardMod
+        
+
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    

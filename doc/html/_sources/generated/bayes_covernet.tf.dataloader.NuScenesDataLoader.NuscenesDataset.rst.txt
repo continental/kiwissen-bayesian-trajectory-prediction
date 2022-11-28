@@ -1,0 +1,13 @@
+bayes\_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset
+================================================================
+
+.. currentmodule:: bayes_covernet.tf.dataloader.NuScenesDataLoader
+
+.. autoclass:: NuscenesDataset
+   :members:
+   :show-inheritance:
+   :private-members:
+   :undoc-members:
+   :inherited-members:
+   
+   .. autoclasstoc::

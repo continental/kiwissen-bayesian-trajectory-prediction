@@ -1,0 +1,6 @@
+bayes\_covernet.tf.model.covernet\_utils.covernet\_to\_class
+============================================================
+
+.. currentmodule:: bayes_covernet.tf.model.covernet_utils
+
+.. autofunction:: covernet_to_class

@@ -1,0 +1,6 @@
+bayes\_covernet.main.rerun\_config
+==================================
+
+.. currentmodule:: bayes_covernet.main
+
+.. autofunction:: rerun_config

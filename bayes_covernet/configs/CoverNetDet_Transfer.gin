@@ -1,0 +1,26 @@
+# Default Configuration for deterministic CoverNet with initialization by a pretrain model.
+NuscenesDataset.data_dir = ''
+NuscenesDataset.data_version = 'v1.0-trainval'
+
+train/NuscenesDataset.split = 'train'
+val/NuscenesDataset.split = 'train_val'
+test/NuscenesDataset.split = 'val'
+
+Trainer.model_factory = @CovernetDet
+Trainer.batch_size=16 #5 
+Trainer.epochs=50
+Trainer.eps_set=8 
+Trainer.lr=2e-3 # 0.00083
+
+Trainer.early_stop_delay = 0
+Trainer.early_stop_patience = 10
+
+Trainer.load_model=''
+
+paramSearch.space = {"lr": ("logfloat", 0.00001, 0.01),
+            		#"batch_size": ("int", 4, 16),
+           			# "spectral_norm": ("float", 1.0, 2.5),
+            		# "gp_kernel_scale": ("float", 0.25, 1.5),     
+            		# "num_inducing": ("int", 512, 2048)
+            		}  
+paramSearch.numTrials = 12

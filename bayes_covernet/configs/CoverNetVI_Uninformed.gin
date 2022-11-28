@@ -1,0 +1,38 @@
+# Default Configuration for variational CoverNet
+NuscenesDataset.data_dir = ''
+NuscenesDataset.data_version = 'v1.0-trainval'
+
+train/NuscenesDataset.split = 'train'
+val/NuscenesDataset.split = 'train_val'
+test/NuscenesDataset.split = 'val'
+
+Trainer.model_factory = @CovernetVI
+Trainer.batch_size=12
+Trainer.epochs=2000
+Trainer.lr = 3e-3
+Trainer.eps_set=8
+Trainer.prior_stddev = 1.0
+
+NuscenesDataset.y_all_valid=False
+Trainer.multi_label=False
+
+Trainer.tied_mean=False
+
+Trainer.freeze_mean=False
+Trainer.cycle=False
+Trainer.max_lr=5e-3
+Trainer.cycle_power=1.0
+
+Trainer.warmup_epochs=0
+Trainer.anneal_epochs=0
+#Trainer.lr_warmup_epochs=0
+Trainer.lr_anneal_epochs=0
+Trainer.lr_decay_epochs=2000
+Trainer.train_mc_samples=1
+
+Trainer.stddev_mean_init = 5e-3
+
+paramSearch.space = {"max_lr": ("logfloat", 1e-3, 5e-2),
+            		}  
+paramSearch.numTrials = 4
+

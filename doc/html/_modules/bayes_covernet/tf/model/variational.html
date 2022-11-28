@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bayes_covernet.tf.model.variational &mdash; Bayesian Continual Learning  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/my_theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/autoclasstoc.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> Bayesian Continual Learning
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../readme.html">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../licenses.html">Licenses</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Bayesian Continual Learning</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>bayes_covernet.tf.model.variational</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bayes_covernet.tf.model.variational</h1><div class="highlight"><pre>
+<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Variational training utilities</span>
+
+<span class="sd">Copyright (c) 2021-2022 Continental AG.</span>
+
+<span class="sd">@author: Christian Wirth &lt;christian.2.wirth@continental-corporation.com&gt;</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">from</span> <span class="nn">edward2.tensorflow</span> <span class="kn">import</span> <span class="n">generated_random_variables</span>
+<span class="kn">from</span> <span class="nn">edward2.tensorflow</span> <span class="kn">import</span> <span class="n">random_variable</span>
+<span class="kn">from</span> <span class="nn">tensorflow.python.eager</span> <span class="kn">import</span> <span class="n">backprop</span>
+<span class="kn">from</span> <span class="nn">tensorflow.python.keras.engine</span> <span class="kn">import</span> <span class="n">data_adapter</span>
+
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+
+
+<div class="viewcode-block" id="predict_step_repeated"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.variational.html#bayes_covernet.tf.model.variational.predict_step_repeated">[docs]</a><span class="k">def</span> <span class="nf">predict_step_repeated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">num_repeats</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Predict step with repeat and averaging. Assumes prob model output.</span>
+
+<span class="sd">    :param data: the input data</span>
+<span class="sd">    :param int num_repeats: number of repeats</span>
+<span class="sd">    :return: averaged predictions</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data_adapter</span><span class="o">.</span><span class="n">expand_1d</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">data_adapter</span><span class="o">.</span><span class="n">unpack_x_y_sample_weight</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">key</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span>
+            <span class="n">value</span><span class="p">,</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+                <span class="p">[[</span><span class="n">num_repeats</span><span class="p">],</span> <span class="n">tf</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">}</span>
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">y_pred</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">num_repeats</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">y_pred</span></div>
+
+
+<div class="viewcode-block" id="test_step_repeated"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.variational.html#bayes_covernet.tf.model.variational.test_step_repeated">[docs]</a><span class="k">def</span> <span class="nf">test_step_repeated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">num_repeats</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Test step with repeat and averaging. Assumes prob model output. Computes test metrics.</span>
+
+<span class="sd">    :param data: the input data</span>
+<span class="sd">    :param int num_repeats: number of repeats</span>
+<span class="sd">    :return: test metrics</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data_adapter</span><span class="o">.</span><span class="n">expand_1d</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_weight</span> <span class="o">=</span> <span class="n">data_adapter</span><span class="o">.</span><span class="n">unpack_x_y_sample_weight</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">key</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span>
+            <span class="n">value</span><span class="p">,</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+                <span class="p">[[</span><span class="n">num_repeats</span><span class="p">],</span> <span class="n">tf</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">}</span>
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">y_pred</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">num_repeats</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">)</span>
+    <span class="c1"># Updates stateful loss metrics.</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">compiled_loss</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">sample_weight</span><span class="p">,</span> <span class="n">regularization_losses</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">losses</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">compiled_metrics</span><span class="o">.</span><span class="n">update_state</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">sample_weight</span><span class="p">)</span>
+    <span class="c1"># Collect metrics to return</span>
+    <span class="n">return_metrics</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">metric</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">return_metrics</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">return_metrics</span><span class="p">[</span><span class="n">metric</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+    <span class="k">return</span> <span class="n">return_metrics</span></div>
+
+
+<div class="viewcode-block" id="train_step_annealed"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.variational.html#bayes_covernet.tf.model.variational.train_step_annealed">[docs]</a><span class="k">def</span> <span class="nf">train_step_annealed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">num_repeats</span><span class="p">,</span> <span class="n">freeze_mean</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">clip_norm</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Train step with repeat, averaging and regularization loss annealing. Assumes prob model output and a loss_scaler model function, returning a scalar [0,1]. Computes train metrics.</span>
+
+<span class="sd">    :param data: the input data</span>
+<span class="sd">    :param int num_repeats: number of repeats</span>
+<span class="sd">    :param float clip_norm: Gradient clipping, by norm. Disabled at 0</span>
+<span class="sd">    :return: train metrics</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># These are the only transformations `Model.fit` applies to user-input</span>
+    <span class="c1"># data when a `tf.data.Dataset` is provided.</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data_adapter</span><span class="o">.</span><span class="n">expand_1d</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_weight</span> <span class="o">=</span> <span class="n">data_adapter</span><span class="o">.</span><span class="n">unpack_x_y_sample_weight</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="n">freeze_mean</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">freeze_mean</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+    <span class="c1"># Run forward pass.</span>
+    <span class="k">with</span> <span class="n">backprop</span><span class="o">.</span><span class="n">GradientTape</span><span class="p">()</span> <span class="k">as</span> <span class="n">tape</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="n">num_repeats</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">key</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span>
+                    <span class="n">value</span><span class="p">,</span>
+                    <span class="n">tf</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+                        <span class="p">[[</span><span class="n">num_repeats</span><span class="p">],</span> <span class="n">tf</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)],</span>
+                        <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">}</span>
+            <span class="n">y_repeated</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span>
+                <span class="n">y</span><span class="p">,</span>
+                <span class="n">tf</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+                    <span class="p">[[</span><span class="n">num_repeats</span><span class="p">],</span> <span class="n">tf</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">y_repeated</span> <span class="o">=</span> <span class="n">y</span>
+
+        <span class="n">y_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compiled_loss</span><span class="p">(</span>
+            <span class="n">y_repeated</span><span class="p">,</span>
+            <span class="n">y_pred</span><span class="p">,</span>
+            <span class="n">sample_weight</span><span class="p">,</span>
+            <span class="n">regularization_losses</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_scaler</span><span class="p">()</span> <span class="o">*</span> <span class="n">loss</span> <span class="k">for</span> <span class="n">loss</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">losses</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">num_repeats</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">y_pred</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span>
+                    <span class="n">tf</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">num_repeats</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+                <span class="p">)</span>
+
+        <span class="c1"># Run backwards pass.</span>
+    <span class="n">grads_and_vars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">_compute_gradients</span><span class="p">(</span>
+        <span class="n">loss</span><span class="p">,</span> <span class="n">var_list</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trainable_variables</span><span class="p">,</span> <span class="n">tape</span><span class="o">=</span><span class="n">tape</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">clip_norm</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">grads_and_vars</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">clip_by_norm</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="n">clip_norm</span><span class="p">),</span> <span class="n">var</span><span class="p">)</span> <span class="k">for</span> <span class="n">grad</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">grads_and_vars</span>
+        <span class="p">]</span>
+
+    <span class="n">grads_and_vars_other</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span> <span class="k">for</span> <span class="n">grad</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">grads_and_vars</span> <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;mean&#39;</span> <span class="ow">in</span> <span class="n">var</span><span class="o">.</span><span class="n">name</span>
+    <span class="p">]</span>
+    <span class="n">grads_and_vars_mean</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span> <span class="k">for</span> <span class="n">grad</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">grads_and_vars</span> <span class="k">if</span> <span class="s1">&#39;mean&#39;</span> <span class="ow">in</span> <span class="n">var</span><span class="o">.</span><span class="n">name</span>
+    <span class="p">]</span>
+
+    <span class="c1"># freeze_cond = tf.logical_and(freeze_mean,tf.logical_or(tf.equal(freeze_cycle,0.0),tf.math.mod(tf.cast(self.optimizer.iterations,tf.float32),freeze_cycle * 2.0) &gt;= freeze_cycle))</span>
+    <span class="c1"># freeze_cond = freeze_mean</span>
+
+    <span class="c1"># grads_and_vars_mean = [(tf.cond(freeze_cond,true_fn=lambda: tf.zeros_like(grad), false_fn=lambda: grad),var) for grad,var in grads_and_vars_mean]</span>
+
+    <span class="c1"># tf.print(freeze_cond, tf.reduce_sum(tf.stack([tf.reduce_sum(grad) for grad, var in grads_and_vars_mean])))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">apply_gradients</span><span class="p">(</span><span class="n">grads_and_vars_mean</span> <span class="o">+</span> <span class="n">grads_and_vars_other</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">compiled_metrics</span><span class="o">.</span><span class="n">update_state</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">sample_weight</span><span class="p">)</span>
+
+    <span class="c1"># Collect metrics to return</span>
+    <span class="n">return_metrics</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">metric</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">return_metrics</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">return_metrics</span><span class="p">[</span><span class="n">metric</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+
+    <span class="k">return</span> <span class="n">return_metrics</span></div>
+
+
+<span class="k">def</span> <span class="nf">_renyi_normal_normal</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Renyi divergence: https://arxiv.org/abs/1602.02311</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">name_scope</span><span class="p">(</span><span class="n">name</span> <span class="ow">or</span> <span class="s1">&#39;renyi_normal_normal&#39;</span><span class="p">):</span>
+        <span class="n">b_scale</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span>
+        <span class="n">a_scale</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span>
+        <span class="n">sigma_2_alpha</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">tf</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">b_scale</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">tf</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">a_scale</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">div</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">b_scale</span> <span class="o">/</span> <span class="n">a_scale</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">))</span>
+            <span class="o">*</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">b_scale</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma_2_alpha</span><span class="p">)</span>
+            <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">-</span> <span class="n">b</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma_2_alpha</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">div</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="NormalRenyiDivergence"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.variational.html#bayes_covernet.tf.model.variational.NormalRenyiDivergence">[docs]</a><span class="k">class</span> <span class="nc">NormalRenyiDivergence</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">regularizers</span><span class="o">.</span><span class="n">Regularizer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Renyi divergence: https://arxiv.org/abs/1602.02311</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">stddev</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructs regularizer where default is a KL towards the std normal.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean</span> <span class="o">=</span> <span class="n">mean</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stddev</span> <span class="o">=</span> <span class="n">stddev</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_factor</span> <span class="o">=</span> <span class="n">scale_factor</span>
+
+<div class="viewcode-block" id="NormalRenyiDivergence.__call__"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.variational.html#bayes_covernet.tf.model.variational.NormalRenyiDivergence.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Computes regularization given an input ed.RandomVariable.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">random_variable</span><span class="o">.</span><span class="n">RandomVariable</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Input must be an ed.RandomVariable.&#39;</span><span class="p">)</span>
+        <span class="n">prior</span> <span class="o">=</span> <span class="n">generated_random_variables</span><span class="o">.</span><span class="n">Independent</span><span class="p">(</span>
+            <span class="n">generated_random_variables</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span>
+                <span class="n">loc</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">event_shape</span><span class="p">),</span>
+                <span class="n">scale</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stddev</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">event_shape</span><span class="p">),</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">distribution</span><span class="p">,</span>
+            <span class="n">reinterpreted_batch_ndims</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">event_shape</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">regularization</span> <span class="o">=</span> <span class="n">_renyi_normal_normal</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">distribution</span><span class="p">,</span> <span class="n">prior</span><span class="o">.</span><span class="n">distribution</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_factor</span> <span class="o">*</span> <span class="n">regularization</span></div>
+
+<div class="viewcode-block" id="NormalRenyiDivergence.get_config"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.variational.html#bayes_covernet.tf.model.variational.NormalRenyiDivergence.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;mean&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span>
+            <span class="s1">&#39;stddev&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stddev</span><span class="p">,</span>
+            <span class="s1">&#39;scale_factor&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_factor</span><span class="p">,</span>
+        <span class="p">}</span></div></div>
+
+
+<div class="viewcode-block" id="NormalRenyiDivergenceWithTiedMean"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.variational.html#bayes_covernet.tf.model.variational.NormalRenyiDivergenceWithTiedMean">[docs]</a><span class="k">class</span> <span class="nc">NormalRenyiDivergenceWithTiedMean</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">regularizers</span><span class="o">.</span><span class="n">Regularizer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Renyi divergence: https://arxiv.org/abs/1602.02311, with mean excluded from the deviation calculation.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stddev</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructs regularizer where default is a KL towards the std normal.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stddev</span> <span class="o">=</span> <span class="n">stddev</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_factor</span> <span class="o">=</span> <span class="n">scale_factor</span>
+
+<div class="viewcode-block" id="NormalRenyiDivergenceWithTiedMean.__call__"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.variational.html#bayes_covernet.tf.model.variational.NormalRenyiDivergenceWithTiedMean.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Computes regularization given an input ed.RandomVariable.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">random_variable</span><span class="o">.</span><span class="n">RandomVariable</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Input must be an ed.RandomVariable.&#39;</span><span class="p">)</span>
+        <span class="n">prior</span> <span class="o">=</span> <span class="n">generated_random_variables</span><span class="o">.</span><span class="n">Independent</span><span class="p">(</span>
+            <span class="n">generated_random_variables</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span>
+                <span class="n">loc</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+                <span class="n">scale</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stddev</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">event_shape</span><span class="p">),</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">distribution</span><span class="p">,</span>
+            <span class="n">reinterpreted_batch_ndims</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">event_shape</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">regularization</span> <span class="o">=</span> <span class="n">_renyi_normal_normal</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">distribution</span><span class="p">,</span> <span class="n">prior</span><span class="o">.</span><span class="n">distribution</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_factor</span> <span class="o">*</span> <span class="n">regularization</span></div>
+
+<div class="viewcode-block" id="NormalRenyiDivergenceWithTiedMean.get_config"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.variational.html#bayes_covernet.tf.model.variational.NormalRenyiDivergenceWithTiedMean.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;stddev&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">stddev</span><span class="p">,</span>
+            <span class="s1">&#39;scale_factor&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_factor</span><span class="p">,</span>
+        <span class="p">}</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 - 2022, Continental Heat AI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,13 @@
+bayes\_covernet.tf.model.training.ResetCovarianceCallback
+=========================================================
+
+.. currentmodule:: bayes_covernet.tf.model.training
+
+.. autoclass:: ResetCovarianceCallback
+   :members:
+   :show-inheritance:
+   :private-members:
+   :undoc-members:
+   :inherited-members:
+   
+   .. autoclasstoc::

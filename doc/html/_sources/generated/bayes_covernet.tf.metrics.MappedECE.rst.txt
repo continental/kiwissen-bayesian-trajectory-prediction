@@ -1,0 +1,13 @@
+bayes\_covernet.tf.metrics.MappedECE
+====================================
+
+.. currentmodule:: bayes_covernet.tf.metrics
+
+.. autoclass:: MappedECE
+   :members:
+   :show-inheritance:
+   :private-members:
+   :undoc-members:
+   :inherited-members:
+   
+   .. autoclasstoc::

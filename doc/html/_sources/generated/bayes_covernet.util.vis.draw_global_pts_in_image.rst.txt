@@ -1,0 +1,6 @@
+bayes\_covernet.util.vis.draw\_global\_pts\_in\_image
+=====================================================
+
+.. currentmodule:: bayes_covernet.util.vis
+
+.. autofunction:: draw_global_pts_in_image

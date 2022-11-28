@@ -1,0 +1,49 @@
+bayes\_covernet.tf.dataloader.NuScenesDataLoader
+================================================
+    
+.. rubric:: Description
+
+.. automodule:: bayes_covernet.tf.dataloader.NuScenesDataLoader
+   
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    .. rubric:: Classes
+
+    .. autosummary::
+        :toctree:
+        :nosignatures:
+        
+        ~NuscenesDataset
+        
+
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    .. rubric:: Functions
+
+    .. autosummary::
+        :toctree:
+        
+        ~read_cached_parameterized
+        
+
+    
+    

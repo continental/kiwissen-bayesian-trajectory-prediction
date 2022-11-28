@@ -1,0 +1,55 @@
+bayes\_covernet.tf.model.variational
+====================================
+    
+.. rubric:: Description
+
+.. automodule:: bayes_covernet.tf.model.variational
+   
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    .. rubric:: Classes
+
+    .. autosummary::
+        :toctree:
+        :nosignatures:
+        
+        ~NormalRenyiDivergence
+        
+        ~NormalRenyiDivergenceWithTiedMean
+        
+
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    .. rubric:: Functions
+
+    .. autosummary::
+        :toctree:
+        
+        ~predict_step_repeated
+        
+        ~test_step_repeated
+        
+        ~train_step_annealed
+        
+
+    
+    

@@ -1,0 +1,39 @@
+bayes\_covernet.tf.fixes
+========================
+    
+.. rubric:: Description
+
+.. automodule:: bayes_covernet.tf.fixes
+   
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    .. rubric:: Functions
+
+    .. autosummary::
+        :toctree:
+        
+        ~update_state
+        
+
+    
+    

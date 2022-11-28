@@ -1,0 +1,13 @@
+bayes\_covernet.pytorch.model.training.Trainer
+==============================================
+
+.. currentmodule:: bayes_covernet.pytorch.model.training
+
+.. autoclass:: Trainer
+   :members:
+   :show-inheritance:
+   :private-members:
+   :undoc-members:
+   :inherited-members:
+   
+   .. autoclasstoc::

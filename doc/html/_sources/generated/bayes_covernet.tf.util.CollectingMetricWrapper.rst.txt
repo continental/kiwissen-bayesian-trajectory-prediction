@@ -1,0 +1,13 @@
+bayes\_covernet.tf.util.CollectingMetricWrapper
+===============================================
+
+.. currentmodule:: bayes_covernet.tf.util
+
+.. autoclass:: CollectingMetricWrapper
+   :members:
+   :show-inheritance:
+   :private-members:
+   :undoc-members:
+   :inherited-members:
+   
+   .. autoclasstoc::

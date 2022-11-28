@@ -1,0 +1,6 @@
+bayes\_covernet.tf.model.variational.train\_step\_annealed
+==========================================================
+
+.. currentmodule:: bayes_covernet.tf.model.variational
+
+.. autofunction:: train_step_annealed

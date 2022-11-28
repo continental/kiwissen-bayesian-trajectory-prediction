@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bayes_covernet.tf.model.training &mdash; Bayesian Continual Learning  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/my_theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/autoclasstoc.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../../about.html" />
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> Bayesian Continual Learning
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../mdfiles.html">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../about.html">Code Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../licenses.html">Licenses</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Bayesian Continual Learning</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>bayes_covernet.tf.model.training</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bayes_covernet.tf.model.training</h1><div class="highlight"><pre>
+<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Model training classes.</span>
+
+<span class="sd">Copyright (c) 2021-2022 Continental AG.</span>
+
+<span class="sd">@author: Christian Wirth &lt;christian.2.wirth@continental-corporation.com&gt;</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">numbers</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+
+<span class="kn">import</span> <span class="nn">gin</span>
+<span class="kn">from</span> <span class="nn">tensorflow.keras.optimizers.schedules</span> <span class="kn">import</span> <span class="n">LearningRateSchedule</span>
+<span class="kn">from</span> <span class="nn">ray</span> <span class="kn">import</span> <span class="n">tune</span>
+<span class="kn">from</span> <span class="nn">tensorboard.plugins.hparams</span> <span class="kn">import</span> <span class="n">api</span> <span class="k">as</span> <span class="n">hp</span>
+<span class="kn">from</span> <span class="nn">tensorflow.keras.losses</span> <span class="kn">import</span> <span class="n">sparse_categorical_crossentropy</span><span class="p">,</span> <span class="n">binary_crossentropy</span>
+<span class="kn">from</span> <span class="nn">tensorflow_addons.metrics.utils</span> <span class="kn">import</span> <span class="n">MeanMetricWrapper</span>
+
+<span class="kn">from</span> <span class="nn">bayes_covernet.tf.dataloader.NuScenesDataLoader</span> <span class="kn">import</span> <span class="n">NuscenesDataset</span>
+<span class="kn">from</span> <span class="nn">bayes_covernet.tf.util</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TFSaver</span><span class="p">,</span>
+    <span class="n">MaxMetricWrapper</span><span class="p">,</span>
+    <span class="n">MultiOutputMeanMetricWrapper</span><span class="p">,</span>
+    <span class="n">CollectingMetricWrapper</span><span class="p">,</span>
+    <span class="n">LastMetricWrapper</span><span class="p">,</span>
+    <span class="n">TensorBoardMod</span><span class="p">,</span>
+    <span class="n">DelayedEarlyStopping</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">bayes_covernet.tf.metrics</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">displacement_error</span><span class="p">,</span>
+    <span class="n">class_rank</span><span class="p">,</span>
+    <span class="n">class_nll</span><span class="p">,</span>
+    <span class="n">MappedSparseCategoricalAccuracy</span><span class="p">,</span>
+    <span class="n">MappedECE</span><span class="p">,</span>
+    <span class="n">MappedPrecision</span><span class="p">,</span>
+    <span class="n">MappedRecall</span><span class="p">,</span>
+    <span class="n">MappedBinaryAccuracy</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+
+
+<div class="viewcode-block" id="ResetCovarianceCallback"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.training.ResetCovarianceCallback.html#bayes_covernet.tf.model.training.ResetCovarianceCallback">[docs]</a><span class="k">class</span> <span class="nc">ResetCovarianceCallback</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">Callback</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Resets the covariance for SNGP after each epoch.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ResetCovarianceCallback.on_epoch_begin"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.training.ResetCovarianceCallback.html#bayes_covernet.tf.model.training.ResetCovarianceCallback.on_epoch_begin">[docs]</a>    <span class="k">def</span> <span class="nf">on_epoch_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">epoch</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sngp</span><span class="o">.</span><span class="n">reset_covariance_matrix</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="Trainer"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.training.Trainer.html#bayes_covernet.tf.model.training.Trainer">[docs]</a><span class="nd">@gin</span><span class="o">.</span><span class="n">configurable</span>
+<span class="k">class</span> <span class="nc">Trainer</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Basic trainer class. Handles model training, loading and runtime logging.</span>
+
+<span class="sd">    :param model_factory: A model factory class, derived from :class:Covernet</span>
+<span class="sd">    :param Path dir: Root folder for the experiment</span>
+<span class="sd">    :param str,None: Current time string, if None, defaults to now</span>
+<span class="sd">    :param str name: Model name, usually model_i, with i as the index</span>
+<span class="sd">    :param int start_epoch: Number of the first epoch</span>
+<span class="sd">    :param int epochs: Number of total epochs</span>
+<span class="sd">    :param int batch_size: Number of examples per batch</span>
+<span class="sd">    :param Path load_model: Model file path to load (as initialization)</span>
+<span class="sd">    :param Path resume_model: Model file path to load (as resume)</span>
+<span class="sd">    :param bool is_tune: If True, several logging methods are disabled (handled via ray)</span>
+<span class="sd">    :param bool multi_label: If True, a multi label loss is used (BCE instead of CE)</span>
+<span class="sd">    :param bool mixed_precision: If True, mixed float16 is used.</span>
+<span class="sd">    :param dict kwargs: Additional hyperparameters, passed to the model factory.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model_factory</span><span class="p">,</span>
+        <span class="nb">dir</span><span class="p">,</span>
+        <span class="n">current_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;model_0&quot;</span><span class="p">,</span>
+        <span class="n">start_epoch</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">epochs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+        <span class="n">load_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">resume_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">is_tune</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">multi_label</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">mixed_precision</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">early_stop_delay</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;prior_model&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">set_jit</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">list_physical_devices</span><span class="p">(</span><span class="s1">&#39;GPU&#39;</span><span class="p">))</span> <span class="o">&gt;=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">mixed_precision</span><span class="p">:</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">mixed_precision</span><span class="o">.</span><span class="n">set_global_policy</span><span class="p">(</span><span class="s1">&#39;mixed_float16&#39;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">gin</span><span class="o">.</span><span class="n">config_scope</span><span class="p">(</span><span class="s1">&#39;train&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">train_dataset</span> <span class="o">=</span> <span class="n">NuscenesDataset</span><span class="p">()</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">(</span><span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">gin</span><span class="o">.</span><span class="n">config_scope</span><span class="p">(</span><span class="s1">&#39;val&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">val_dataset</span> <span class="o">=</span> <span class="n">NuscenesDataset</span><span class="p">()</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="n">gin</span><span class="o">.</span><span class="n">config_scope</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">test_dataset</span> <span class="o">=</span> <span class="n">NuscenesDataset</span><span class="p">()</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">factory</span> <span class="o">=</span> <span class="n">model_factory</span><span class="p">(</span>
+            <span class="n">dataset_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train_dataset</span><span class="p">),</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">multi_label</span><span class="o">=</span><span class="n">multi_label</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_time</span> <span class="o">=</span> <span class="n">current_time</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">exp_dir</span> <span class="o">=</span> <span class="nb">dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;trainer&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">hyperparameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="n">batch_size</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;mixed_precision&quot;</span><span class="p">:</span> <span class="n">mixed_precision</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;early_stop_delay&quot;</span><span class="p">:</span> <span class="n">early_stop_delay</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_tune</span> <span class="o">=</span> <span class="n">is_tune</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_epoch</span> <span class="o">=</span> <span class="n">start_epoch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span> <span class="o">=</span> <span class="n">epochs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">multi_label</span> <span class="o">=</span> <span class="n">multi_label</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_model</span> <span class="o">=</span> <span class="n">load_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resume_model</span> <span class="o">=</span> <span class="n">resume_model</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">early_stop_delay</span> <span class="o">=</span> <span class="n">early_stop_delay</span>
+
+    <span class="k">def</span> <span class="nf">_build_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">multi_label</span><span class="p">:</span>
+            <span class="n">cls_metrics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_multi_label_metrics</span><span class="p">()</span>
+            <span class="n">joined_metrics</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cls_metrics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_class_label_metrics</span><span class="p">()</span>
+            <span class="n">joined_metrics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_trajectory_metrics</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;loss_scaler&#39;</span><span class="p">):</span>
+            <span class="n">joined_metrics</span> <span class="o">=</span> <span class="n">joined_metrics</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_vi_metrics</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">lr</span><span class="p">,</span> <span class="n">LearningRateSchedule</span><span class="p">):</span>
+
+            <span class="k">def</span> <span class="nf">lr_metric</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">lr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">iterations</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">def</span> <span class="nf">lr_metric</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">lr</span>
+
+        <span class="n">joined_metrics</span> <span class="o">=</span> <span class="n">joined_metrics</span> <span class="o">+</span> <span class="p">[</span><span class="n">MultiOutputMeanMetricWrapper</span><span class="p">(</span><span class="n">lr_metric</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;lr&quot;</span><span class="p">)]</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;cls&quot;</span><span class="p">:</span> <span class="n">cls_metrics</span><span class="p">,</span> <span class="s2">&quot;joined&quot;</span><span class="p">:</span> <span class="n">joined_metrics</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_build_multi_label_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds multi label metrics to the keras fit call</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">mapped_BCE</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">binary_crossentropy</span><span class="p">(</span>
+                <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper_label</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">),</span> <span class="n">from_logits</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+
+        <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">MeanMetricWrapper</span><span class="p">(</span>
+                <span class="n">mapped_BCE</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;nll&#39;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="c1"># ===================================================================</span>
+            <span class="c1"># MeanMetricWrapper(</span>
+            <span class="c1">#     bipartition_error,</span>
+            <span class="c1">#     mapper=self.mapper_label,</span>
+            <span class="c1">#     name=&#39;bP&#39;,</span>
+            <span class="c1"># ),</span>
+            <span class="c1"># ===================================================================</span>
+            <span class="n">MappedBinaryAccuracy</span><span class="p">(</span><span class="n">mapper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper_label</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;bacc&#39;</span><span class="p">),</span>
+            <span class="n">MappedPrecision</span><span class="p">(</span><span class="n">mapper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper_label</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;prec&#39;</span><span class="p">),</span>
+            <span class="n">MappedRecall</span><span class="p">(</span><span class="n">mapper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper_label</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;rec&#39;</span><span class="p">),</span>
+            <span class="n">MappedECE</span><span class="p">(</span><span class="n">mapper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper_label</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;ece&#39;</span><span class="p">),</span>
+        <span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">metrics</span>
+
+    <span class="k">def</span> <span class="nf">_build_trajectory_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        
+        <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">CollectingMetricWrapper</span><span class="p">(</span>
+                <span class="n">displacement_error</span><span class="p">,</span>
+                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train_dataset</span><span class="p">),</span>
+                <span class="n">final_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">mapper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper_trajs</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;ade1&#39;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">MultiOutputMeanMetricWrapper</span><span class="p">(</span>
+                <span class="n">displacement_error</span><span class="p">,</span>
+                <span class="n">final_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">k</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                <span class="n">mapper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper_trajs</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;ade5&#39;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">MultiOutputMeanMetricWrapper</span><span class="p">(</span>
+                <span class="n">displacement_error</span><span class="p">,</span>
+                <span class="n">final_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">k</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                <span class="n">mapper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper_trajs</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;ade10&#39;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">MultiOutputMeanMetricWrapper</span><span class="p">(</span>
+                <span class="n">displacement_error</span><span class="p">,</span>
+                <span class="n">final_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">k</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+                <span class="n">mapper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper_trajs</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;ade15&#39;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">MultiOutputMeanMetricWrapper</span><span class="p">(</span>
+                <span class="n">displacement_error</span><span class="p">,</span>
+                <span class="n">final_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">mapper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper_trajs</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;fde&#39;</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">metrics</span>
+                
+    <span class="k">def</span> <span class="nf">_build_class_label_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds class label metrics to the keras fit call</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">mapped_sparse_CE</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">sparse_categorical_crossentropy</span><span class="p">(</span>
+                <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper_class</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">),</span> <span class="n">from_logits</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+
+        <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">CollectingMetricWrapper</span><span class="p">(</span>
+                <span class="n">class_rank</span><span class="p">,</span>
+                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train_dataset</span><span class="p">),</span>
+                <span class="n">mapper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper_class</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;rnk&#39;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">MeanMetricWrapper</span><span class="p">(</span>
+                <span class="n">mapped_sparse_CE</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;nll&#39;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">MappedECE</span><span class="p">(</span><span class="n">mapper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper_class</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;ece&#39;</span><span class="p">),</span>
+            <span class="n">MappedSparseCategoricalAccuracy</span><span class="p">(</span><span class="n">mapper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper_class</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;acc&quot;</span><span class="p">),</span>
+        <span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">metrics</span>
+    
+    <span class="k">def</span> <span class="nf">_build_vi_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds variational inference metrics to the keras fit call</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">metrics</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">def</span> <span class="nf">loss_sum</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">losses</span><span class="p">)</span>
+
+        <span class="n">metrics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">MultiOutputMeanMetricWrapper</span><span class="p">(</span><span class="n">loss_sum</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;KL&quot;</span><span class="p">))</span>
+
+        <span class="k">def</span> <span class="nf">stddev</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+            <span class="n">stddev</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span>
+                <span class="n">tf</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">stddev</span><span class="p">())</span>
+                        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">layers</span>
+                        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s1">&#39;kernel&#39;</span><span class="p">)</span>
+                        <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">kernel</span><span class="p">,</span> <span class="s1">&#39;distribution&#39;</span><span class="p">)</span>
+                    <span class="p">]</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">stddev</span>
+
+        <span class="n">metrics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">MultiOutputMeanMetricWrapper</span><span class="p">(</span><span class="n">stddev</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;stddev&quot;</span><span class="p">))</span>
+
+        <span class="k">def</span> <span class="nf">max_stddev</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+            <span class="n">max_stddev</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_max</span><span class="p">(</span>
+                <span class="n">tf</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="n">tf</span><span class="o">.</span><span class="n">reduce_max</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">kernel</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">stddev</span><span class="p">())</span>
+                        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">layers</span>
+                        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s1">&#39;kernel&#39;</span><span class="p">)</span>
+                        <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">kernel</span><span class="p">,</span> <span class="s1">&#39;distribution&#39;</span><span class="p">)</span>
+                    <span class="p">]</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">max_stddev</span>
+
+        <span class="n">metrics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">MaxMetricWrapper</span><span class="p">(</span><span class="n">max_stddev</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;max_stddev&quot;</span><span class="p">))</span>
+        <span class="n">metrics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">LastMetricWrapper</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">loss_scaler</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;KLscale&quot;</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">metrics</span>
+
+    <span class="k">def</span> <span class="nf">_load_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">load_model</span><span class="p">,</span> <span class="n">isResume</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads a model file for resume or as initializer.</span>
+
+<span class="sd">        :param Str,Path load_model: Path to the model to load. A checkpoint, Model- or Model_ep file (without suffix)</span>
+<span class="sd">        :param bool isResume: If True, optimizer and start_epoch is not loaded</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="s1">&#39;checkpoint&#39;</span> <span class="ow">in</span> <span class="n">Path</span><span class="p">(</span><span class="n">load_model</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="n">load_model</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+                <span class="nb">list</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">load_model</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.index&quot;</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">isResume</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">start_epoch</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="nb">int</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Model-(\d+).*&#39;</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="n">load_model</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="p">)</span>
+        <span class="k">elif</span> <span class="s1">&#39;Model-&#39;</span> <span class="ow">in</span> <span class="n">Path</span><span class="p">(</span><span class="n">load_model</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">isResume</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">start_epoch</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="nb">int</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Model-(\d+).*&#39;</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="n">load_model</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="p">)</span>
+        <span class="k">elif</span> <span class="s1">&#39;Model_ep&#39;</span> <span class="ow">in</span> <span class="n">Path</span><span class="p">(</span><span class="n">load_model</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">isResume</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">start_epoch</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="nb">int</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Model_ep(\d+)-.*&#39;</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="n">load_model</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+                    <span class="o">+</span> <span class="mi">1</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">load_model</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> is not a valid format&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">isResume</span><span class="p">:</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="n">restore</span><span class="p">(</span><span class="n">load_model</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">)</span><span class="o">.</span><span class="n">restore</span><span class="p">(</span>
+                <span class="n">load_model</span>
+            <span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">status</span><span class="o">.</span><span class="n">assert_existing_objects_matched</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Loaded </span><span class="si">{</span><span class="n">load_model</span><span class="si">}</span><span class="s1"> as full match&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;loss_scaler&#39;</span><span class="p">):</span>
+                <span class="n">collected_variables</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
+                    <span class="n">variables</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">layer</span><span class="o">.</span><span class="n">trainable_variables</span> <span class="o">+</span> <span class="n">layer</span><span class="o">.</span><span class="n">non_trainable_variables</span>
+                    <span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">collected_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="p">{</span>
+                                <span class="n">variable</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;:0&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">):</span> <span class="n">variable</span>
+                                <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">variables</span>
+                                <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;stddev&#39;</span> <span class="ow">in</span> <span class="n">variable</span><span class="o">.</span><span class="n">name</span>
+                            <span class="p">}</span>
+                        <span class="p">)</span>
+                <span class="n">checkpoint_keys</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">shape</span> <span class="ow">in</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">list_variables</span><span class="p">(</span><span class="n">load_model</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;optimizer&#39;</span> <span class="ow">in</span> <span class="n">name</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">checkpoint_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">checkpoint_keys</span><span class="p">:</span>
+                    <span class="n">elements</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+                    <span class="n">variable</span> <span class="o">=</span> <span class="n">collected_variables</span><span class="p">[</span>
+                        <span class="nb">int</span><span class="p">(</span><span class="n">elements</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;layer_with_weights-&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                    <span class="p">][</span><span class="n">elements</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">load_variable</span><span class="p">(</span><span class="n">load_model</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+                    <span class="n">variable</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Loaded </span><span class="si">{</span><span class="n">load_model</span><span class="si">}</span><span class="s1"> as VI mean init&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">e</span>
+
+<div class="viewcode-block" id="Trainer.build"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.training.Trainer.html#bayes_covernet.tf.model.training.Trainer.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Build the model (compile), adds metrics and loads prior data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="p">(</span>
+            <span class="n">model</span><span class="p">,</span>
+            <span class="n">loss</span><span class="p">,</span>
+            <span class="n">optimizer</span><span class="p">,</span>
+            <span class="n">mapper_trajs</span><span class="p">,</span>
+            <span class="n">mapper_class</span><span class="p">,</span>
+            <span class="n">mapper_label</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+
+        <span class="c1"># model.summary()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mapper_label</span> <span class="o">=</span> <span class="n">mapper_label</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mapper_class</span> <span class="o">=</span> <span class="n">mapper_class</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mapper_trajs</span> <span class="o">=</span> <span class="n">mapper_trajs</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_tune</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">current_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%b</span><span class="si">%d</span><span class="s1">_%H-%M-%S&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp_dir</span> <span class="o">/</span> <span class="s1">&#39;logs&#39;</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_time</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mdl_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp_dir</span> <span class="o">/</span> <span class="s1">&#39;models&#39;</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_time</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mdl_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trial_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;logs/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_time</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">/&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">checkpointer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_model</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">resume_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">load_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resume_model</span>
+            <span class="n">isResume</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">load_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_model</span>
+            <span class="n">isResume</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="n">load_model</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_load_model</span><span class="p">(</span><span class="n">load_model</span><span class="p">,</span> <span class="n">isResume</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+            <span class="n">optimizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_build_metrics</span><span class="p">(),</span><span class="n">run_eagerly</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Trainer.get_callbacks"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.training.Trainer.html#bayes_covernet.tf.model.training.Trainer.get_callbacks">[docs]</a>    <span class="k">def</span> <span class="nf">get_callbacks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">is_test</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">test_epoch</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates Keras Callbacks. If self.is_tune is True, this will generate an empty list.</span>
+
+<span class="sd">        :param bool is_test: If True, a TensorBoard logger writing test metrics, is created.</span>
+<span class="sd">        :param int test_epoch: Current epoch, for eval only.</span>
+<span class="sd">        :return: Callbacks</span>
+<span class="sd">        :rtype: list[callback]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_tune</span><span class="p">:</span>
+            <span class="n">callbacks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tensorboard_cb</span> <span class="o">=</span> <span class="n">TensorBoardMod</span><span class="p">(</span>
+                <span class="n">log_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log_dir</span><span class="p">,</span>
+                <span class="n">epoch</span><span class="o">=</span><span class="n">test_epoch</span><span class="p">,</span>
+                <span class="n">update_freq</span><span class="o">=</span><span class="s1">&#39;epoch&#39;</span><span class="p">,</span>
+                <span class="n">profile_batch</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">write_graph</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">is_test</span><span class="o">=</span><span class="n">is_test</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tensorboard_cb</span><span class="o">.</span><span class="n">set_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">is_test</span><span class="p">:</span>
+                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensorboard_cb</span><span class="o">.</span><span class="n">_train_writer</span><span class="o">.</span><span class="n">as_default</span><span class="p">():</span>
+                    <span class="n">tf</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="s2">&quot;config&quot;</span><span class="p">,</span> <span class="n">gin</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">config_str</span><span class="p">(),</span> <span class="n">step</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">tensorboard_cb</span><span class="o">.</span><span class="n">_val_writer</span><span class="o">.</span><span class="n">as_default</span><span class="p">():</span>
+                <span class="n">tf</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="s2">&quot;config&quot;</span><span class="p">,</span> <span class="n">gin</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">config_str</span><span class="p">(),</span> <span class="n">step</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">measures</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;epoch&#39;</span><span class="p">,</span> <span class="s1">&#39;val_loss&#39;</span><span class="p">,</span> <span class="s1">&#39;loss&#39;</span><span class="p">]</span>
+            <span class="n">is_min</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;loss_scaler&#39;</span><span class="p">):</span>
+                <span class="n">measures</span> <span class="o">=</span> <span class="n">measures</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;val_nll&quot;</span><span class="p">]</span>
+                <span class="n">is_min</span> <span class="o">=</span> <span class="n">is_min</span> <span class="o">+</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">]</span>
+            <span class="n">callbacks</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tensorboard_cb</span><span class="p">,</span>
+                <span class="n">TFSaver</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">mdl_dir</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span>
+                    <span class="n">measures</span><span class="o">=</span><span class="n">measures</span><span class="p">,</span>
+                    <span class="n">is_min</span><span class="o">=</span><span class="n">is_min</span><span class="p">,</span>
+                    <span class="n">last_n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="n">hp</span><span class="o">.</span><span class="n">KerasCallback</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">tensorboard_cb</span><span class="o">.</span><span class="n">_val_writer</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">trial_name</span> <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;test&quot;</span> <span class="k">if</span> <span class="n">is_test</span> <span class="k">else</span> <span class="s2">&quot;validation&quot;</span><span class="p">),</span>
+                <span class="p">),</span>
+            <span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">is_test</span><span class="p">:</span>
+                <span class="n">callbacks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">hp</span><span class="o">.</span><span class="n">KerasCallback</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">tensorboard_cb</span><span class="o">.</span><span class="n">_train_writer</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">trial_name</span> <span class="o">+</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;sngp&quot;</span><span class="p">):</span>
+                <span class="n">callbacks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ResetCovarianceCallback</span><span class="p">())</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;loss_scaler&#39;</span><span class="p">):</span>
+                <span class="n">callbacks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">DelayedEarlyStopping</span><span class="p">(</span>
+                        <span class="n">start_delay</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">early_stop_delay</span><span class="p">,</span>
+                        <span class="n">patience</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                        <span class="n">monitor</span><span class="o">=</span><span class="s1">&#39;val_nll&#39;</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">callbacks</span></div>
+
+<div class="viewcode-block" id="Trainer.eval"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.training.Trainer.html#bayes_covernet.tf.model.training.Trainer.eval">[docs]</a>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Runs model evaluation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">test_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_dataset</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span><span class="o">.</span><span class="n">prefetch</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">AUTOTUNE</span>
+        <span class="p">)</span>
+        <span class="n">callbacks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_callbacks</span><span class="p">(</span><span class="n">is_test</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">test_epoch</span><span class="o">=</span><span class="n">epoch</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">cb</span> <span class="ow">in</span> <span class="n">callbacks</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cb</span><span class="p">,</span> <span class="n">hp</span><span class="o">.</span><span class="n">KerasCallback</span><span class="p">):</span>
+                <span class="n">cb</span><span class="o">.</span><span class="n">on_train_begin</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">multi_label</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">gin</span><span class="o">.</span><span class="n">config_scope</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">):</span>
+                <span class="n">test_dataset_multi_label</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">NuscenesDataset</span><span class="p">(</span><span class="n">y_all_valid</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">get_dataset</span><span class="p">()</span>
+                    <span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">prefetch</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">AUTOTUNE</span><span class="p">)</span>
+                <span class="p">)</span>
+
+                <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">MeanMetricWrapper</span><span class="p">(</span>
+                        <span class="n">class_nll</span><span class="p">,</span>
+                        <span class="n">mapper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper_label</span><span class="p">,</span>
+                        <span class="n">cls_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;neg_nll&#39;</span><span class="p">,</span>
+                    <span class="p">),</span>
+                    <span class="n">MeanMetricWrapper</span><span class="p">(</span>
+                        <span class="n">class_nll</span><span class="p">,</span>
+                        <span class="n">mapper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mapper_label</span><span class="p">,</span>
+                        <span class="n">cls_idx</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;pos_nll&#39;</span><span class="p">,</span>
+                    <span class="p">),</span>
+                <span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="n">metrics</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">test_dataset_multi_label</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">cb</span> <span class="ow">in</span> <span class="n">callbacks</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cb</span><span class="p">,</span> <span class="n">hp</span><span class="o">.</span><span class="n">KerasCallback</span><span class="p">):</span>
+                <span class="n">cb</span><span class="o">.</span><span class="n">on_train_end</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Trainer.run_training"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.training.Trainer.html#bayes_covernet.tf.model.training.Trainer.run_training">[docs]</a>    <span class="k">def</span> <span class="nf">run_training</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_epoch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Executes a training. Overrides learning rate, if required.</span>
+
+<span class="sd">        :param int start_epoch: Overrides self.start_epoch</span>
+<span class="sd">        :param float lr: Overrides optimizer learning rate</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">start_epoch</span> <span class="k">if</span> <span class="n">start_epoch</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_epoch</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">lr</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">lr</span><span class="p">,</span> <span class="n">LearningRateSchedule</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">lr</span><span class="p">,</span> <span class="s2">&quot;end_learning_rate&quot;</span><span class="p">):</span>
+                        <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">lr</span><span class="o">.</span><span class="n">end_learning_rate</span><span class="p">,</span> <span class="n">lr</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">lr</span><span class="o">.</span><span class="n">initial_learning_rate</span><span class="p">,</span> <span class="n">lr</span>
+                        <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">lr</span><span class="p">,</span> <span class="n">lr</span><span class="p">)</span>
+
+            <span class="n">train_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_dataset</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span><span class="o">.</span><span class="n">prefetch</span><span class="p">(</span>
+                <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">AUTOTUNE</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_dataset</span><span class="p">:</span>
+                <span class="n">val_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_dataset</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span><span class="o">.</span><span class="n">prefetch</span><span class="p">(</span>
+                    <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">AUTOTUNE</span>
+                <span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+                <span class="n">train_dataset</span><span class="p">,</span>
+                <span class="n">validation_data</span><span class="o">=</span><span class="n">val_dataset</span><span class="p">,</span>
+                <span class="n">epochs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">,</span>
+                <span class="n">initial_epoch</span><span class="o">=</span><span class="n">start_epoch</span>
+                <span class="k">if</span> <span class="n">start_epoch</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_epoch</span><span class="p">,</span>
+                <span class="n">callbacks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_callbacks</span><span class="p">(),</span>
+                <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Trainer.plot_predictions"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.training.Trainer.html#bayes_covernet.tf.model.training.Trainer.plot_predictions">[docs]</a>    <span class="k">def</span> <span class="nf">plot_predictions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="TuneableTrainer"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.training.TuneableTrainer.html#bayes_covernet.tf.model.training.TuneableTrainer">[docs]</a><span class="k">class</span> <span class="nc">TuneableTrainer</span><span class="p">(</span><span class="n">tune</span><span class="o">.</span><span class="n">Trainable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Subclass of Ray Trainable, for model (re)-initialization</span>
+
+<span class="sd">    :param dict config: Optimization config, including gin_config and load_model</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">logger_creator</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">bayes_covernet.tf.model.models</span> <span class="kn">import</span> <span class="p">(</span>
+            <span class="n">Covernet</span><span class="p">,</span>
+            <span class="n">CovernetDet</span><span class="p">,</span>
+            <span class="n">CovernetSNGP</span><span class="p">,</span>
+            <span class="n">CovernetVI</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="kn">from</span> <span class="nn">bayes_covernet.util.config</span> <span class="kn">import</span> <span class="n">paramSearch</span>
+
+        <span class="n">gin</span><span class="o">.</span><span class="n">enter_interactive_mode</span><span class="p">()</span>
+        <span class="n">gin</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;gin_config&quot;</span><span class="p">])</span>
+        <span class="k">del</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;gin_config&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_model</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;load_model&quot;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;load_model&quot;</span><span class="p">]</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">logger_creator</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TuneableTrainer.setup"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.training.TuneableTrainer.html#bayes_covernet.tf.model.training.TuneableTrainer.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">config</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">is_tune</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">load_model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">load_model</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">hyperparameters</span></div>
+
+<div class="viewcode-block" id="TuneableTrainer.step"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.training.TuneableTrainer.html#bayes_covernet.tf.model.training.TuneableTrainer.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">history</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">run_training</span><span class="p">(</span>
+            <span class="n">lr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lr&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">start_epoch</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">)</span>
+        <span class="n">metrics</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">history</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Number</span><span class="p">):</span>
+                <span class="n">metrics</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+        <span class="k">return</span> <span class="n">metrics</span></div>
+
+<div class="viewcode-block" id="TuneableTrainer.load_checkpoint"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.training.TuneableTrainer.html#bayes_covernet.tf.model.training.TuneableTrainer.load_checkpoint">[docs]</a>    <span class="k">def</span> <span class="nf">load_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">):</span>
+        <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">)</span>
+        <span class="n">tmp_path</span> <span class="o">=</span> <span class="n">checkpoint</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;persistent_restore&quot;</span>
+        <span class="k">if</span> <span class="n">tmp_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">)</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copytree</span><span class="p">(</span><span class="n">checkpoint</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">)</span>
+        <span class="n">chkpt</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">tmp_path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.index&quot;</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">checkpointer</span><span class="o">.</span><span class="n">restore</span><span class="p">(</span><span class="n">chkpt</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TuneableTrainer.save_checkpoint"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.training.TuneableTrainer.html#bayes_covernet.tf.model.training.TuneableTrainer.save_checkpoint">[docs]</a>    <span class="k">def</span> <span class="nf">save_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tmp_checkpoint_dir</span><span class="p">):</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tmp_checkpoint_dir</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;Model&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">checkpointer</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">tmp_checkpoint_dir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;checkpoint&quot;</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 - 2022, Continental Heat AI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

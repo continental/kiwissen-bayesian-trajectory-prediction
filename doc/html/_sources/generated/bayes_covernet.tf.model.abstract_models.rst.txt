@@ -1,0 +1,48 @@
+bayes\_covernet.tf.model.abstract\_models
+=========================================
+    
+.. rubric:: Description
+
+.. automodule:: bayes_covernet.tf.model.abstract_models
+   
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    .. rubric:: Classes
+
+    .. autosummary::
+        :toctree:
+        :nosignatures:
+        
+        ~DetMVNMixin
+        
+        ~DetMixin
+        
+        ~ModelFactory
+        
+        ~SNGPMixin
+        
+        ~VIMixin
+        
+
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    

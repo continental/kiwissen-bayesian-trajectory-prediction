@@ -1,0 +1,60 @@
+# Mandatory, path to the nuscenes dataset
+NuscenesDataset.data_dir = ''
+NuscenesDataset.data_version = 'v1.0-mini'
+
+# Cache directory, defaults to workdir/cache
+NuscenesDataset.cache_dir = ''
+
+train/NuscenesDataset.split = 'mini_train' #should be 'train'
+val/NuscenesDataset.split = 'mini_val' #should be 'train_val'
+test/NuscenesDataset.split = 'mini_val' #should be 'val'
+
+# Remove for running with the full dataset.
+train/NuscenesDataset.limit=10
+test/NuscenesDataset.limit=10
+val/NuscenesDataset.limit=10
+
+# Should be both True or False. 
+NuscenesDataset.y_all_valid = False # Defines the creation of a multilabel dataset, based on determining all valid trajectories
+Trainer.multi_label = False # Determines that the model should obtain a multi label predictor head.
+
+NuscenesDataset.multitask = True
+Trainer.multitask_lambda = 0.01
+
+Trainer.model_factory = @CovernetDet #Can be @CovernetDet (Conventional/Deterministic DNN), @CovernetVI (Variational Inference) or @CovernetSNGP (WIP)
+Trainer.early_stop_delay = 0
+Trainer.early_stop_patience = 10
+Trainer.eps_set= 4# Determines the CoverNet trajectory set to use (2,4 or 8)
+
+# Common DNN Hyperparameters
+Trainer.batch_size=2
+Trainer.epochs = 1
+Trainer.lr = 0.002
+Trainer.momentum = 0.9
+
+#CovernetVI (Variational Inference) only
+# Trainer.prior_stddev = 1.0 # Standard Deviation of the Gauss Prior
+# Trainer.stddev_mean_init = 5e-3 # Standard Deviation of the Gauss mean initialization
+# Trainer.prior_model = 'D:/NuScenes/Model_ep301-302' # Path to a CovernetVI model, to be used as prior (activates GVCL)
+
+# Trainer.tied_mean = False # Disregard mean difference from KL term
+# Trainer.use_renyi = False # Use Renyi Divergence instead of KL divergence
+# Trainer.cycle = True # Cycling learning rate (requires lr_decay_epochs > 0). Cylces up to max_lr
+# Trainer.warmup_epochs = 0 # Number of epochs without KL term weight 0
+# Trainer.anneal_epochs= 5 # Number of epochs to anneal the KL term weight from 0 to 1
+# Trainer.lr_warmup_epochs = 2 # Number of epochs with constant lr, before cycling. Requires cycle = True.
+# Trainer.lr_anneal_epochs= 2 # Number of epochs with lr annealing from lr to max_lr. Requires cycle = false
+# Trainer.lr_decay_epochs= 2 # Number of epochs with lr annealing from max_lr to lr. Requires cycle = false
+# Trainer.max_lr = 0.01
+# Trainer.train_mc_samples=1 # Number of MC samples for training.
+# Trainer.cycle_power = 1.0 # Determines slop for single cycling (cycle = False) and multiple cycling (cycle = True).
+
+# Trainer.posterior_temp = 0.1 # Posterior temperature. Defaults to tempering by batchsize.
+# Trainer.gvcl_lambda = 50.0 # GVCL Lambda value. Requires Trainer.prior_model
+
+# Parameter search space for program modes o1/o2/o3
+paramSearch.space = {"lr": ("logfloat", 0.00001, 0.001),
+            		# "batch_size": ("int", 4, 32)
+            		}  
+# Number of parameter trials
+paramSearch.numTrials = 2

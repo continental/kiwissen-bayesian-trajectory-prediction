@@ -1,0 +1,6 @@
+bayes\_covernet.tf.metrics.convert\_to\_rank
+============================================
+
+.. currentmodule:: bayes_covernet.tf.metrics
+
+.. autofunction:: convert_to_rank

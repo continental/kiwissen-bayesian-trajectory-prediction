@@ -1,0 +1,6 @@
+bayes\_covernet.tf.model.covernet\_utils.closest\_trajectory
+============================================================
+
+.. currentmodule:: bayes_covernet.tf.model.covernet_utils
+
+.. autofunction:: closest_trajectory

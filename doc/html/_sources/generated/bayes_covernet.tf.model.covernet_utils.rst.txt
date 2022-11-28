@@ -1,0 +1,47 @@
+bayes\_covernet.tf.model.covernet\_utils
+========================================
+    
+.. rubric:: Description
+
+.. automodule:: bayes_covernet.tf.model.covernet_utils
+   
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    .. rubric:: Functions
+
+    .. autosummary::
+        :toctree:
+        
+        ~closest_trajectory
+        
+        ~covernet_to_class
+        
+        ~covernet_to_multilabel
+        
+        ~covernet_to_trajs
+        
+        ~multipath_to_trajs
+        
+
+    
+    

@@ -1,0 +1,13 @@
+bayes\_covernet.tf.model.variational.NormalRenyiDivergence
+==========================================================
+
+.. currentmodule:: bayes_covernet.tf.model.variational
+
+.. autoclass:: NormalRenyiDivergence
+   :members:
+   :show-inheritance:
+   :private-members:
+   :undoc-members:
+   :inherited-members:
+   
+   .. autoclasstoc::

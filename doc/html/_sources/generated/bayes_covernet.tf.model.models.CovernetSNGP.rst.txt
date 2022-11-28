@@ -1,0 +1,13 @@
+bayes\_covernet.tf.model.models.CovernetSNGP
+============================================
+
+.. currentmodule:: bayes_covernet.tf.model.models
+
+.. autoclass:: CovernetSNGP
+   :members:
+   :show-inheritance:
+   :private-members:
+   :undoc-members:
+   :inherited-members:
+   
+   .. autoclasstoc::

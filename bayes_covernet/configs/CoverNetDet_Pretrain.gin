@@ -1,0 +1,31 @@
+# Default Configuration for deterministic CoverNet for predicting the driveable area
+NuscenesDataset.data_dir = ''
+NuscenesDataset.data_version = 'v1.0-trainval'
+
+train/NuscenesDataset.split = 'train'
+val/NuscenesDataset.split = 'train_val'
+test/NuscenesDataset.split = 'val'
+
+Trainer.model_factory = @CovernetDet
+Trainer.batch_size=16
+Trainer.epochs=50
+Trainer.lr = 1e-3
+Trainer.eps_set=8
+
+NuscenesDataset.y_all_valid=True
+Trainer.multi_label=True
+
+Trainer.early_stop_delay = 0
+Trainer.early_stop_patience = 10
+
+paramSearch.space = {"lr": ("float", 0.01, 0.05),
+			# "gvcl_lambda": ("float", 10.0, 100.0),
+			# "posterior_temp": ("float", 0.05, 0.2),
+            		# "batch_size": ("int", 4, 16),
+			#"prior_stddev": ("float", 0.01, 0.1)
+           		# "spectral_norm": ("float", 1.0, 2.5),
+            		# "gp_kernel_scale": ("float", 0.25, 1.5),     
+            		# "num_inducing": ("int", 512, 2048)
+            		}  
+paramSearch.numTrials = 4
+

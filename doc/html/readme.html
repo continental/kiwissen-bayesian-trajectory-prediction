@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bayesian Continual Learning for Prior Knowledge Integration &mdash; Bayesian Continual Learning  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/my_theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/autoclasstoc.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Documentation" href="apidoc.html" />
+    <link rel="prev" title="Welcome to Bayesian Continual Learning’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Bayesian Continual Learning
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Bayesian Continual Learning for Prior Knowledge Integration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#getting-started">Getting started</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#installing">Installing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#running">Running</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#model">Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#prior-distribution">Prior Distribution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#prediction-model">Prediction Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#continual-learning">Continual Learning</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="apidoc.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="about.html">Code Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="licenses.html">Licenses</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Bayesian Continual Learning</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Bayesian Continual Learning for Prior Knowledge Integration</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/readme.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="bayesian-continual-learning-for-prior-knowledge-integration">
+<h1>Bayesian Continual Learning for Prior Knowledge Integration<a class="headerlink" href="#bayesian-continual-learning-for-prior-knowledge-integration" title="Permalink to this headline"></a></h1>
+<p>Framework for integrating prior knowledge into trajectory prediction models via Bayesian Continual Learning.</p>
+<section id="getting-started">
+<h2>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline"></a></h2>
+<section id="installing">
+<h3>Installing<a class="headerlink" href="#installing" title="Permalink to this headline"></a></h3>
+<ol class="arabic simple">
+<li><p>Clone this repository</p></li>
+<li><p>Download <a class="reference external" href="https://www.nuscenes.org/nuscenes#download">NuScenes Trajectory Prediction Dataset</a></p></li>
+<li><p>Download <a class="reference external" href="https://www.nuscenes.org/public/nuscenes-prediction-challenge-trajectory-sets.zip">Trajectory Data</a> and put into data directory</p></li>
+<li><p>Install Dependencies</p>
+<ol class="arabic simple">
+<li><p>pip install requirements.txt</p></li>
+<li><p>pip install requirements_no_deps.txt –no-deps</p></li>
+</ol>
+</li>
+</ol>
+</section>
+<section id="running">
+<h3>Running<a class="headerlink" href="#running" title="Permalink to this headline"></a></h3>
+<ol class="arabic simple">
+<li><p>Run with bayes_covernet/main.py as main entrypoint</p></li>
+<li><p>Edit config.gin to match your needs/setup.</p></li>
+<li><p>First start should use -c and -p for populating the cache. See –help for more arguments and description.</p></li>
+</ol>
+</section>
+</section>
+<section id="model">
+<h2>Model<a class="headerlink" href="#model" title="Permalink to this headline"></a></h2>
+<p>The provided software computes a trajectory prediction model under consideration of a prior distribution. Currently available are:</p>
+<section id="prior-distribution">
+<h3>Prior Distribution<a class="headerlink" href="#prior-distribution" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p>Discrete Driveable: Discrete set of trajectories, as defined by <a class="reference external" href="https://arxiv.org/abs/1911.10298">CoverNet</a>, conditioned on all keypoints beeing driveable, as defined by the dataset.</p></li>
+</ul>
+</section>
+<section id="prediction-model">
+<h3>Prediction Model<a class="headerlink" href="#prediction-model" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p>Deterministic <a class="reference external" href="https://arxiv.org/abs/1911.10298">CoverNet</a></p></li>
+<li><p>Mean-Field Variational <a class="reference external" href="https://arxiv.org/abs/1911.10298">CoverNet</a></p></li>
+<li><p><a class="reference external" href="https://arxiv.org/abs/2006.10108">SNGP</a> <a class="reference external" href="https://arxiv.org/abs/1911.10298">CoverNet</a></p></li>
+<li><p>Deterministic <a class="reference external" href="https://arxiv.org/abs/1910.05449">MultiPath</a>, with <a class="reference external" href="https://arxiv.org/abs/1911.10298">CoverNet</a> input representation and trajectory set</p></li>
+<li><p>Mean-Field Variational <a class="reference external" href="https://arxiv.org/abs/1910.05449">MultiPath</a>, with <a class="reference external" href="https://arxiv.org/abs/1911.10298">CoverNet</a> input representation and trajectory set</p></li>
+</ul>
+</section>
+<section id="continual-learning">
+<h3>Continual Learning<a class="headerlink" href="#continual-learning" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p><a class="reference external" href="https://openreview.net/pdf?id=_IM-AfFhna9">Generalized Variational Continual Learning</a></p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to Bayesian Continual Learning’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="apidoc.html" class="btn btn-neutral float-right" title="API Documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 - 2022, Continental Heat AI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

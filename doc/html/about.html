@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Code Structure &mdash; Bayesian Continual Learning  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/my_theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/autoclasstoc.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="#" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Licenses" href="licenses.html" />
+    <link rel="prev" title="bayes_covernet.util.vis.draw_global_pts_in_image" href="generated/bayes_covernet.util.vis.draw_global_pts_in_image.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Bayesian Continual Learning
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="mdfiles.html">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apidoc.html">API Documentation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Code Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="licenses.html">Licenses</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Bayesian Continual Learning</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Code Structure</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/about.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="code-structure">
+<h1>Code Structure<a class="headerlink" href="#code-structure" title="Permalink to this headline"></a></h1>
+<p>Models are defined by a <a class="reference internal" href="generated/bayes_covernet.tf.model.abstract_models.ModelFactory.html#bayes_covernet.tf.model.abstract_models.ModelFactory" title="bayes_covernet.tf.model.abstract_models.ModelFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelFactory</span></code></a>, which is an abstract base class. Realizations usually consist of an base model
+(like <a class="reference internal" href="generated/bayes_covernet.tf.model.models.Covernet.html#bayes_covernet.tf.model.models.Covernet" title="bayes_covernet.tf.model.models.Covernet"><code class="xref py py-class docutils literal notranslate"><span class="pre">Covernet</span></code></a>) and a probabilistic modeling Mixin (like <a class="reference internal" href="generated/bayes_covernet.tf.model.abstract_models.VIMixin.html#bayes_covernet.tf.model.abstract_models.VIMixin" title="bayes_covernet.tf.model.abstract_models.VIMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">VIMixin</span></code></a>), resulting in
+a complete ModelFactory (<a class="reference internal" href="generated/bayes_covernet.tf.model.models.CovernetVI.html#bayes_covernet.tf.model.models.CovernetVI" title="bayes_covernet.tf.model.models.CovernetVI"><code class="xref py py-class docutils literal notranslate"><span class="pre">CovernetVI</span></code></a>).</p>
+<p>Executing a model uses the <a class="reference internal" href="generated/bayes_covernet.tf.model.training.Trainer.html#bayes_covernet.tf.model.training.Trainer" title="bayes_covernet.tf.model.training.Trainer"><code class="xref py py-class docutils literal notranslate"><span class="pre">Trainer</span></code></a>, which creates metrics, runs the training and the evaluation. <a class="reference internal" href="generated/bayes_covernet.tf.model.training.TuneableTrainer.html#bayes_covernet.tf.model.training.TuneableTrainer" title="bayes_covernet.tf.model.training.TuneableTrainer"><code class="xref py py-class docutils literal notranslate"><span class="pre">TuneableTrainer</span></code></a> is a wrapper
+for use with <a class="reference external" href="https://docs.ray.io/en/latest/tune/index.html">ray tune</a> (see program arguments).</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="generated/bayes_covernet.util.vis.draw_global_pts_in_image.html" class="btn btn-neutral float-left" title="bayes_covernet.util.vis.draw_global_pts_in_image" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="licenses.html" class="btn btn-neutral float-right" title="Licenses" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 - 2022, Continental Heat AI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,67 @@
+bayes\_covernet.tf.metrics
+==========================
+    
+.. rubric:: Description
+
+.. automodule:: bayes_covernet.tf.metrics
+   
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    .. rubric:: Classes
+
+    .. autosummary::
+        :toctree:
+        :nosignatures:
+        
+        ~MappedBinaryAccuracy
+        
+        ~MappedECE
+        
+        ~MappedPrecision
+        
+        ~MappedRecall
+        
+        ~MappedSparseCategoricalAccuracy
+        
+
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    .. rubric:: Functions
+
+    .. autosummary::
+        :toctree:
+        
+        ~bipartition_error
+        
+        ~class_nll
+        
+        ~class_rank
+        
+        ~convert_to_rank
+        
+        ~displacement_error
+        
+        ~kendall_tau
+        
+
+    
+    

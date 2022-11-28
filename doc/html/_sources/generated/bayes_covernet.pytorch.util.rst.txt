@@ -1,0 +1,39 @@
+bayes\_covernet.pytorch.util
+============================
+    
+.. rubric:: Description
+
+.. automodule:: bayes_covernet.pytorch.util
+   
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    .. rubric:: Functions
+
+    .. autosummary::
+        :toctree:
+        
+        ~displacement_error
+        
+
+    
+    

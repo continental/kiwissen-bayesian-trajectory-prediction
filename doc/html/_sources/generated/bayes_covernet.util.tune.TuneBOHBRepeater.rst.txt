@@ -1,0 +1,13 @@
+bayes\_covernet.util.tune.TuneBOHBRepeater
+==========================================
+
+.. currentmodule:: bayes_covernet.util.tune
+
+.. autoclass:: TuneBOHBRepeater
+   :members:
+   :show-inheritance:
+   :private-members:
+   :undoc-members:
+   :inherited-members:
+   
+   .. autoclasstoc::

@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bayes_covernet.tf.dataloader.NuScenesDataLoader &mdash; Bayesian Continual Learning  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/my_theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/autoclasstoc.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> Bayesian Continual Learning
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../readme.html">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../licenses.html">Licenses</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Bayesian Continual Learning</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>bayes_covernet.tf.dataloader.NuScenesDataLoader</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bayes_covernet.tf.dataloader.NuScenesDataLoader</h1><div class="highlight"><pre>
+<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Dataloader for NuScenes data</span>
+
+<span class="sd">Copyright (c) 2021-2022 Continental AG.</span>
+
+<span class="sd">@author: Christian Wirth &lt;christian.2.wirth@continental-corporation.com&gt;</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="kn">import</span> <span class="nb">property</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span><span class="p">,</span> <span class="n">partial</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">pdb</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">gin</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span> <span class="nn">nuscenes</span> <span class="kn">import</span> <span class="n">NuScenes</span>
+<span class="kn">from</span> <span class="nn">nuscenes.eval.common.utils</span> <span class="kn">import</span> <span class="n">quaternion_yaw</span>
+<span class="kn">from</span> <span class="nn">nuscenes.eval.prediction.splits</span> <span class="kn">import</span> <span class="n">get_prediction_challenge_split</span>
+<span class="kn">from</span> <span class="nn">nuscenes.map_expansion.map_api</span> <span class="kn">import</span> <span class="n">NuScenesMap</span>
+<span class="kn">from</span> <span class="nn">nuscenes.prediction</span> <span class="kn">import</span> <span class="n">PredictHelper</span>
+<span class="kn">from</span> <span class="nn">nuscenes.prediction.helper</span> <span class="kn">import</span> <span class="n">convert_local_coords_to_global</span>
+<span class="kn">from</span> <span class="nn">nuscenes.prediction.input_representation.agents</span> <span class="kn">import</span> <span class="n">AgentBoxesWithFadedHistory</span>
+<span class="kn">from</span> <span class="nn">nuscenes.prediction.input_representation.combinators</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Rasterizer</span><span class="p">,</span>
+    <span class="n">add_foreground_to_image</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">nuscenes.prediction.input_representation.interface</span> <span class="kn">import</span> <span class="n">InputRepresentation</span>
+<span class="kn">from</span> <span class="nn">nuscenes.prediction.input_representation.static_layers</span> <span class="kn">import</span> <span class="n">StaticLayerRasterizer</span>
+<span class="kn">from</span> <span class="nn">nuscenes.prediction.input_representation.utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">convert_to_pixel_coords</span><span class="p">,</span>
+    <span class="n">get_rotation_matrix</span><span class="p">,</span>
+    <span class="n">get_crops</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pyquaternion.quaternion</span> <span class="kn">import</span> <span class="n">Quaternion</span>
+<span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="kn">import</span> <span class="n">Polygon</span><span class="p">,</span> <span class="n">MultiPolygon</span><span class="p">,</span> <span class="n">LineString</span><span class="p">,</span> <span class="n">Point</span><span class="p">,</span> <span class="n">box</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+
+
+<div class="viewcode-block" id="read_cached_parameterized"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.dataloader.NuScenesDataLoader.read_cached_parameterized.html#bayes_covernet.tf.dataloader.NuScenesDataLoader.read_cached_parameterized">[docs]</a><span class="k">def</span> <span class="nf">read_cached_parameterized</span><span class="p">(</span><span class="n">filename_fn</span><span class="p">,</span> <span class="n">shape_fn</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generic caching wrapper, using Numpy MEM and pickle files. Caches the output to filename_fn, assuming the name is unique.</span>
+<span class="sd">    Pickle used for object dtype, mem for everything else.</span>
+
+<span class="sd">    :param callable filename_fn: Function returning a unique filename, based on instance_token and sample_token</span>
+<span class="sd">    :param callable shape_fn: Returns a shape tuple, based on self. May return None for object dtype.</span>
+<span class="sd">    :param type dtype: dtype of the function result</span>
+<span class="sd">    :return: The data generated by the wrapped function</span>
+<span class="sd">    :rtype: np.ndarray or object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">read_cached</span><span class="p">(</span><span class="n">create_fn</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">inner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">filename_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">shape_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="n">file</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">.pkl&#39;</span>
+                <span class="k">if</span> <span class="n">dtype</span> <span class="o">==</span> <span class="nb">object</span>
+                <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">.mem&#39;</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">create_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">dtype</span> <span class="o">!=</span> <span class="nb">object</span><span class="p">:</span>
+                        <span class="n">fmem</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+                            <span class="n">file</span><span class="p">,</span>
+                            <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
+                            <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w+&#39;</span><span class="p">,</span>
+                            <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span>
+                        <span class="p">)</span>
+                        <span class="n">fmem</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)[:]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">filestream</span><span class="p">:</span>
+                            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">filestream</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">dtype</span> <span class="o">!=</span> <span class="nb">object</span><span class="p">:</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+                            <span class="n">file</span><span class="p">,</span>
+                            <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
+                            <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span>
+                            <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span>
+                        <span class="p">)</span>
+                        <span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                        <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">filestream</span><span class="p">:</span>
+                        <span class="n">data</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filestream</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">data</span>
+
+        <span class="k">return</span> <span class="n">inner</span>
+
+    <span class="k">return</span> <span class="n">read_cached</span></div>
+
+
+<div class="viewcode-block" id="NuscenesDataset"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.html#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset">[docs]</a><span class="nd">@gin</span><span class="o">.</span><span class="n">configurable</span>
+<span class="k">class</span> <span class="nc">NuscenesDataset</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NuScenes dataset with preprocessing pipeline</span>
+
+<span class="sd">    :param str split: train, train_val or val</span>
+<span class="sd">    :oaram str data_dir: dataset root folder</span>
+<span class="sd">    :param str,None cache_dir: Optional. Caching directory</span>
+<span class="sd">    :param str data_version: NuScenes dataset version name</span>
+<span class="sd">    :param int,str limit: Limit in terms of instances of map name</span>
+<span class="sd">    :param int eps_set: Covernet epsilon value for trajectory set</span>
+<span class="sd">    :param bool y_all_valid: If True, y will be all valid trajectories, instead of observed</span>
+<span class="sd">    :paran mp_pool: Optional. Multiprocessing pool for reuse</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">split</span><span class="p">,</span>
+        <span class="n">data_dir</span><span class="o">=</span><span class="s1">&#39;D:/nuScenes_mini&#39;</span><span class="p">,</span>
+        <span class="n">cache_dir</span><span class="o">=</span><span class="s1">&#39;cache&#39;</span><span class="p">,</span>
+        <span class="n">data_version</span><span class="o">=</span><span class="s1">&#39;v1.0-mini&#39;</span><span class="p">,</span>
+        <span class="n">limit</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">eps_set</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="n">y_all_valid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">mp_pool</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="c1"># tf.data.experimental.enable_debug_mode()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span> <span class="o">=</span> <span class="n">data_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_version</span> <span class="o">=</span> <span class="n">data_version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mtp_input_representation</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trajectories_ego</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_maps</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">split</span> <span class="o">=</span> <span class="n">split</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">token_pairs_full</span> <span class="o">=</span> <span class="n">get_prediction_challenge_split</span><span class="p">(</span>
+            <span class="n">split</span><span class="p">,</span> <span class="n">dataroot</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">token_pairs_full</span> <span class="o">=</span> <span class="p">[</span><span class="n">pair</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">token_pairs_full</span><span class="p">]</span>
+
+        <span class="n">agent_rasterizer</span> <span class="o">=</span> <span class="n">AgentBoxesWithFadedHistory</span><span class="p">(</span>
+            <span class="kc">None</span><span class="p">,</span>
+            <span class="n">seconds_of_history</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">meters_ahead</span><span class="o">=</span><span class="mi">39</span><span class="p">,</span>
+            <span class="n">meters_behind</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span>
+            <span class="n">meters_left</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span>
+            <span class="n">meters_right</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_size</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">int</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">agent_rasterizer</span><span class="o">.</span><span class="n">meters_left</span> <span class="o">+</span> <span class="n">agent_rasterizer</span><span class="o">.</span><span class="n">meters_right</span><span class="p">)</span>
+                <span class="o">/</span> <span class="n">agent_rasterizer</span><span class="o">.</span><span class="n">resolution</span>
+            <span class="p">),</span>
+            <span class="nb">int</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">agent_rasterizer</span><span class="o">.</span><span class="n">meters_left</span> <span class="o">+</span> <span class="n">agent_rasterizer</span><span class="o">.</span><span class="n">meters_right</span><span class="p">)</span>
+                <span class="o">/</span> <span class="n">agent_rasterizer</span><span class="o">.</span><span class="n">resolution</span>
+            <span class="p">),</span>
+            <span class="mi">3</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">cache_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">cache_dir</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">():</span>
+                <span class="n">root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)))</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span>
+                <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">root</span> <span class="o">/</span> <span class="n">cache_dir</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">=</span> <span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">image_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">image_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_future_sec</span> <span class="o">=</span> <span class="mi">6</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">eps_set</span> <span class="o">=</span> <span class="n">eps_set</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_all_valid</span> <span class="o">=</span> <span class="n">y_all_valid</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mp_pool</span> <span class="o">=</span> <span class="n">mp_pool</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driveable_polygons</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">limit</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">mapping</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_map_mappings</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">token_pairs</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="p">(</span><span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">token_pairs_full</span>
+                <span class="k">if</span> <span class="n">mapping</span><span class="p">[</span><span class="n">sample_token</span><span class="p">]</span> <span class="o">==</span> <span class="n">limit</span>
+            <span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">token_pairs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">token_pairs_full</span><span class="p">[:</span><span class="n">limit</span><span class="p">]</span>
+
+    <span class="c1"># =========================================================================</span>
+    <span class="c1">#         instance_token = &#39;bc38961ca0ac4b14ab90e547ba79fbb6&#39;</span>
+    <span class="c1">#         sample_token = &#39;e0845f5322254dafadbbed75aaa07969&#39;</span>
+    <span class="c1">#</span>
+    <span class="c1">#         img = self.mtp_input_representation.make_input_representation(instance_token, sample_token)</span>
+    <span class="c1">#         buffer = max([agent_rasterizer.meters_ahead, agent_rasterizer.meters_behind,</span>
+    <span class="c1">#                       agent_rasterizer.meters_left, agent_rasterizer.meters_right]) * 2</span>
+    <span class="c1">#         image_side_length = int(buffer/agent_rasterizer.resolution)</span>
+    <span class="c1">#         agent_pixels = int(image_side_length / 2), int(image_side_length / 2)</span>
+    <span class="c1">#         agent_image = np.zeros((image_side_length,image_side_length, 3))</span>
+    <span class="c1">#         starting_annotation = self.helper.get_sample_annotation(instance_token, sample_token)</span>
+    <span class="c1">#         center_agent_yaw = quaternion_yaw(Quaternion(starting_annotation[&#39;rotation&#39;]))</span>
+    <span class="c1">#         rotation_mat = get_rotation_matrix(agent_image.shape, center_agent_yaw)</span>
+    <span class="c1"># =========================================================================</span>
+
+    <span class="c1"># ======================================================================</span>
+    <span class="c1"># import cProfile, pstats, io</span>
+    <span class="c1"># from pstats import SortKey</span>
+    <span class="c1"># pr = cProfile.Profile()</span>
+    <span class="c1"># pr.enable()</span>
+    <span class="c1"># ======================================================================</span>
+
+    <span class="c1"># ======================================================================</span>
+    <span class="c1"># trajectories_taken = self.read_target_trajectories(instance_token, sample_token)</span>
+    <span class="c1"># trajectories_valid = self.read_possible_trajectories(instance_token, sample_token)</span>
+    <span class="c1"># ======================================================================</span>
+
+    <span class="c1"># ======================================================================</span>
+    <span class="c1"># pr.disable()</span>
+    <span class="c1"># s = io.StringIO()</span>
+    <span class="c1"># sortby = SortKey.CUMULATIVE</span>
+    <span class="c1"># ps = pstats.Stats(pr, stream=s).sort_stats(sortby)</span>
+    <span class="c1"># ps.print_stats()</span>
+    <span class="c1"># print(s.getvalue())</span>
+    <span class="c1"># ======================================================================</span>
+
+    <span class="c1"># =========================================================================</span>
+    <span class="c1">#         for trajectory in self.trajectories_ego:</span>
+    <span class="c1">#             trajectory_global = convert_local_coords_to_global(trajectory, starting_annotation[&#39;translation&#39;], starting_annotation[&#39;rotation&#39;])</span>
+    <span class="c1">#             for p1, p2 in zip(trajectory_global[:-1],trajectory_global[1:]):</span>
+    <span class="c1">#                 p1 = convert_to_pixel_coords(p1,starting_annotation[&#39;translation&#39;][:2],agent_pixels,agent_rasterizer.resolution)</span>
+    <span class="c1">#                 p2 = convert_to_pixel_coords(p2,starting_annotation[&#39;translation&#39;][:2],agent_pixels,agent_rasterizer.resolution)</span>
+    <span class="c1">#                 cv2.line(agent_image, (p1[1],p1[0]), (p2[1],p2[0]), color=(255,0,0), thickness=10)</span>
+    <span class="c1">#</span>
+    <span class="c1">#         for trajectory in trajectories_valid:</span>
+    <span class="c1">#             trajectory_global = convert_local_coords_to_global(trajectory, starting_annotation[&#39;translation&#39;], starting_annotation[&#39;rotation&#39;])</span>
+    <span class="c1">#             for p1, p2 in zip(trajectory_global[:-1],trajectory_global[1:]):</span>
+    <span class="c1">#                 p1 = convert_to_pixel_coords(p1,starting_annotation[&#39;translation&#39;][:2],agent_pixels,agent_rasterizer.resolution)</span>
+    <span class="c1">#                 p2 = convert_to_pixel_coords(p2,starting_annotation[&#39;translation&#39;][:2],agent_pixels,agent_rasterizer.resolution)</span>
+    <span class="c1">#                 cv2.line(agent_image, (p1[1],p1[0]), (p2[1],p2[0]), color=(255,255,0), thickness=10)</span>
+    <span class="c1">#</span>
+    <span class="c1">#         for trajectory in trajectories_taken:</span>
+    <span class="c1">#             trajectory_global = convert_local_coords_to_global(trajectory, starting_annotation[&#39;translation&#39;], starting_annotation[&#39;rotation&#39;])</span>
+    <span class="c1">#             for p1, p2 in zip(trajectory_global[:-1],trajectory_global[1:]):</span>
+    <span class="c1">#                 p1 = convert_to_pixel_coords(p1,starting_annotation[&#39;translation&#39;][:2],agent_pixels,agent_rasterizer.resolution)</span>
+    <span class="c1">#                 p2 = convert_to_pixel_coords(p2,starting_annotation[&#39;translation&#39;][:2],agent_pixels,agent_rasterizer.resolution)</span>
+    <span class="c1">#                 cv2.line(agent_image, (p1[1],p1[0]), (p2[1],p2[0]), color=(0,255,0), thickness=10)</span>
+    <span class="c1">#</span>
+    <span class="c1">#         rotated_img = cv2.warpAffine(agent_image, rotation_mat, agent_image.shape[:2]).astype(&#39;uint8&#39;)</span>
+    <span class="c1">#         row_crop, col_crop = get_crops(agent_rasterizer.meters_ahead, agent_rasterizer.meters_behind,</span>
+    <span class="c1">#                                    agent_rasterizer.meters_left, agent_rasterizer.meters_right, agent_rasterizer.resolution,</span>
+    <span class="c1">#                                    image_side_length)</span>
+    <span class="c1">#         rotated_img = rotated_img[row_crop, col_crop]</span>
+    <span class="c1">#         img = reduce(add_foreground_to_image, [img,rotated_img])</span>
+    <span class="c1">#         plt.imshow(img)</span>
+    <span class="c1"># =========================================================================</span>
+
+<div class="viewcode-block" id="NuscenesDataset.is_possible_trajectory"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.html#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.is_possible_trajectory">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">is_possible_trajectory</span><span class="p">(</span><span class="n">trajectory</span><span class="p">,</span> <span class="n">translation</span><span class="p">,</span> <span class="n">rotation</span><span class="p">,</span> <span class="n">polygons</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determines if all keypoints of the trajectory are within the polygons area.</span>
+
+<span class="sd">        :param list trajectory: List of 2D points</span>
+<span class="sd">        :param translation: Translation matrix local to global</span>
+<span class="sd">        :param rotation: Rotation matrix local to global</span>
+<span class="sd">        :param list: List of polygons</span>
+<span class="sd">        :return: True, all points within area</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">trajectory_global</span> <span class="o">=</span> <span class="n">convert_local_coords_to_global</span><span class="p">(</span>
+            <span class="n">trajectory</span><span class="p">,</span>
+            <span class="n">translation</span><span class="p">,</span>
+            <span class="n">rotation</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">trajectory_global</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">NuscenesDataset</span><span class="o">.</span><span class="n">point_on_polygons</span><span class="p">(</span><span class="o">*</span><span class="n">point</span><span class="p">,</span> <span class="n">polygons</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="NuscenesDataset.point_on_polygons"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.html#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.point_on_polygons">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">point_on_polygons</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">polygons</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determines if a single point is within the polygons area.</span>
+
+<span class="sd">        :param float x: X coordinate</span>
+<span class="sd">        :param float y: Y coordinate</span>
+<span class="sd">        :param list: List of polygons</span>
+<span class="sd">        :return: True, all points within area</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">point</span> <span class="o">=</span> <span class="n">Point</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">polygon</span> <span class="ow">in</span> <span class="n">polygons</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">point</span><span class="o">.</span><span class="n">within</span><span class="p">(</span><span class="n">polygon</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="c1"># If nothing is found, return an empty string.</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="NuscenesDataset.get_map_mappings"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.html#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.get_map_mappings">[docs]</a>    <span class="nd">@read_cached_parameterized</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="bp">self</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;map_mapping_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">split</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+        <span class="n">shape_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get_map_mappings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a map from sample_token ids to map name</span>
+
+<span class="sd">        :return: The mapping</span>
+<span class="sd">        :rtype: Dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sample_tokens</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">sample_token</span> <span class="k">for</span> <span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">token_pairs_full</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="nb">map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">sample_token</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">get_map_name_from_sample_token</span><span class="p">(</span><span class="n">sample_token</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">sample_token</span> <span class="ow">in</span> <span class="n">sample_tokens</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="nb">map</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">maps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_maps</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_maps</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_maps</span><span class="p">[</span><span class="s1">&#39;boston-seaport&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">NuScenesMap</span><span class="p">(</span>
+                <span class="n">map_name</span><span class="o">=</span><span class="s1">&#39;boston-seaport&#39;</span><span class="p">,</span> <span class="n">dataroot</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_maps</span><span class="p">[</span><span class="s1">&#39;singapore-hollandvillage&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">NuScenesMap</span><span class="p">(</span>
+                <span class="n">map_name</span><span class="o">=</span><span class="s1">&#39;singapore-hollandvillage&#39;</span><span class="p">,</span> <span class="n">dataroot</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_maps</span><span class="p">[</span><span class="s1">&#39;singapore-onenorth&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">NuScenesMap</span><span class="p">(</span>
+                <span class="n">map_name</span><span class="o">=</span><span class="s1">&#39;singapore-onenorth&#39;</span><span class="p">,</span> <span class="n">dataroot</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_maps</span><span class="p">[</span><span class="s1">&#39;singapore-queenstown&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">NuScenesMap</span><span class="p">(</span>
+                <span class="n">map_name</span><span class="o">=</span><span class="s1">&#39;singapore-queenstown&#39;</span><span class="p">,</span> <span class="n">dataroot</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_maps</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">trajectories_ego</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trajectories_ego</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)))</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">root</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;epsilon_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">eps_set</span><span class="si">}</span><span class="s1">.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                <span class="n">trajectories</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_trajectories_ego</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">trajectories</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trajectories_ego</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">helper</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="p">:</span>
+            <span class="n">nuscenes</span> <span class="o">=</span> <span class="n">NuScenes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_version</span><span class="p">,</span> <span class="n">dataroot</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span> <span class="o">=</span> <span class="n">PredictHelper</span><span class="p">(</span><span class="n">nuscenes</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">mtp_input_representation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mtp_input_representation</span><span class="p">:</span>
+            <span class="n">static_layer_rasterizer</span> <span class="o">=</span> <span class="n">StaticLayerRasterizer</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="p">,</span>
+                <span class="n">meters_ahead</span><span class="o">=</span><span class="mi">39</span><span class="p">,</span>
+                <span class="n">meters_behind</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span>
+                <span class="n">meters_left</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span>
+                <span class="n">meters_right</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">agent_rasterizer</span> <span class="o">=</span> <span class="n">AgentBoxesWithFadedHistory</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="p">,</span>
+                <span class="n">seconds_of_history</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">meters_ahead</span><span class="o">=</span><span class="mi">39</span><span class="p">,</span>
+                <span class="n">meters_behind</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span>
+                <span class="n">meters_left</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span>
+                <span class="n">meters_right</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mtp_input_representation</span> <span class="o">=</span> <span class="n">InputRepresentation</span><span class="p">(</span>
+                <span class="n">static_layer_rasterizer</span><span class="p">,</span> <span class="n">agent_rasterizer</span><span class="p">,</span> <span class="n">Rasterizer</span><span class="p">()</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mtp_input_representation</span>
+
+<div class="viewcode-block" id="NuscenesDataset.read_target_trajectories"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.html#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.read_target_trajectories">[docs]</a>    <span class="nd">@read_cached_parameterized</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="bp">self</span><span class="p">,</span> <span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">instance_token</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">sample_token</span><span class="si">}</span><span class="s1">_gt&#39;</span><span class="p">,</span>
+        <span class="n">shape_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_future_sec</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="k">def</span> <span class="nf">read_target_trajectories</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the future trajectory for the ego vehicle</span>
+
+<span class="sd">        :param str instance_token: Object instance</span>
+<span class="sd">        :param str sample_token: Scene sample instance</span>
+<span class="sd">        :return: The future trajectory in ego coordinates</span>
+<span class="sd">        :rtype: np.ndarray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">future_for_agent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">get_future_for_agent</span><span class="p">(</span>
+                <span class="n">instance_token</span><span class="p">,</span>
+                <span class="n">sample_token</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">num_future_sec</span><span class="p">,</span>
+                <span class="n">in_agent_frame</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">just_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">future_for_agent</span></div>
+
+<div class="viewcode-block" id="NuscenesDataset.read_possible_trajectories"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.html#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.read_possible_trajectories">[docs]</a>    <span class="nd">@read_cached_parameterized</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="bp">self</span><span class="p">,</span> <span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">instance_token</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">sample_token</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">eps_set</span><span class="si">}</span><span class="s1">_possible&#39;</span><span class="p">,</span>
+        <span class="n">shape_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">trajectories_ego</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span> <span class="nf">read_possible_trajectories</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the all possible trajectories for the ego vehicle, based on driveable area.</span>
+
+<span class="sd">        :param str instance_token: Object instance</span>
+<span class="sd">        :param str sample_token: Scene sample instance</span>
+<span class="sd">        :return: The future trajectories in ego coordinates. Invalid trajectories have 0 values.</span>
+<span class="sd">        :rtype: np.ndarray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">map_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">get_map_name_from_sample_token</span><span class="p">(</span><span class="n">sample_token</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">map_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">driveable_polygons</span><span class="p">:</span>
+            <span class="n">nusc_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maps</span><span class="p">[</span><span class="n">map_name</span><span class="p">]</span>
+            <span class="n">records</span> <span class="o">=</span> <span class="n">nusc_map</span><span class="o">.</span><span class="n">explorer</span><span class="o">.</span><span class="n">map_api</span><span class="o">.</span><span class="n">drivable_area</span>
+            <span class="n">polygons</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">nusc_map</span><span class="o">.</span><span class="n">explorer</span><span class="o">.</span><span class="n">extract_polygon</span><span class="p">(</span><span class="n">polygon_token</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">records</span>
+                <span class="k">for</span> <span class="n">polygon_token</span> <span class="ow">in</span> <span class="n">record</span><span class="p">[</span><span class="s1">&#39;polygon_tokens&#39;</span><span class="p">]</span>
+            <span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">driveable_polygons</span><span class="p">[</span><span class="n">map_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">polygons</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">polygons</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">driveable_polygons</span><span class="p">[</span><span class="n">map_name</span><span class="p">]</span>
+
+        <span class="n">starting_annotation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">get_sample_annotation</span><span class="p">(</span>
+            <span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span>
+        <span class="p">)</span>
+
+        <span class="n">trajectory_global_start</span> <span class="o">=</span> <span class="n">convert_local_coords_to_global</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trajectories_ego</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">starting_annotation</span><span class="p">[</span><span class="s1">&#39;translation&#39;</span><span class="p">],</span>
+            <span class="n">starting_annotation</span><span class="p">[</span><span class="s1">&#39;rotation&#39;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="n">polygons</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="n">polygons</span><span class="p">,</span>
+            <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">item</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span>
+                <span class="n">Point</span><span class="p">(</span><span class="n">trajectory_global_start</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">trajectory_global_start</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mp_pool</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pool</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mp_pool</span>
+        <span class="n">possible</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+            <span class="n">partial</span><span class="p">(</span>
+                <span class="n">NuscenesDataset</span><span class="o">.</span><span class="n">is_possible_trajectory</span><span class="p">,</span>
+                <span class="n">translation</span><span class="o">=</span><span class="n">starting_annotation</span><span class="p">[</span><span class="s1">&#39;translation&#39;</span><span class="p">],</span>
+                <span class="n">rotation</span><span class="o">=</span><span class="n">starting_annotation</span><span class="p">[</span><span class="s1">&#39;rotation&#39;</span><span class="p">],</span>
+                <span class="n">polygons</span><span class="o">=</span><span class="n">polygons</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trajectories_ego</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mp_pool</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pool</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+        <span class="n">possible_trajectories</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trajectories_ego</span>
+            <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">possible</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">possible_trajectories</span></div>
+
+<div class="viewcode-block" id="NuscenesDataset.read_image"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.html#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.read_image">[docs]</a>    <span class="nd">@read_cached_parameterized</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="bp">self</span><span class="p">,</span> <span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">instance_token</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">sample_token</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+        <span class="n">shape_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_size</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span> <span class="nf">read_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the MTP/Covernet image representation of the current scene</span>
+
+<span class="sd">        :param str instance_token: Object instance</span>
+<span class="sd">        :param str sample_token: Scene sample instance</span>
+<span class="sd">        :return: The RBG image</span>
+<span class="sd">        :rtype: np.ndarray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtp_input_representation</span><span class="o">.</span><span class="n">make_input_representation</span><span class="p">(</span>
+            <span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">image</span></div>
+
+<div class="viewcode-block" id="NuscenesDataset.read_agent_state"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.html#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.read_agent_state">[docs]</a>    <span class="nd">@read_cached_parameterized</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="bp">self</span><span class="p">,</span> <span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">instance_token</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">sample_token</span><span class="si">}</span><span class="s1">_state&#39;</span><span class="p">,</span>
+        <span class="n">shape_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">:</span> <span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="k">def</span> <span class="nf">read_agent_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the ego state vector with velocity, acceleation and heading</span>
+
+<span class="sd">        :param str instance_token: Object instance</span>
+<span class="sd">        :param str sample_token: Scene sample instance</span>
+<span class="sd">        :return: The current stae</span>
+<span class="sd">        :rtype: np.ndarray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">agent_state_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">get_velocity_for_agent</span><span class="p">(</span><span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">get_acceleration_for_agent</span><span class="p">(</span><span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">get_heading_change_rate_for_agent</span><span class="p">(</span>
+                    <span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span>
+                <span class="p">),</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">agent_state_vector</span></div>
+
+<div class="viewcode-block" id="NuscenesDataset.get_dataset"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.html#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.get_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">get_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the dataset, as specified by the constructor.</span>
+
+<span class="sd">        :param bool shuffle: Dataset is shuffled</span>
+<span class="sd">        :return: The dataset</span>
+<span class="sd">        :rtype: tf.data.Dataset</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">instance_tokens</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">sample_tokens</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">token_pairs</span><span class="p">:</span>
+            <span class="n">instance_tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">instance_token</span><span class="p">)</span>
+            <span class="n">sample_tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sample_token</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">read_data</span><span class="p">(</span><span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span><span class="p">):</span>
+            <span class="n">instance_token</span> <span class="o">=</span> <span class="n">instance_token</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+            <span class="n">sample_token</span> <span class="o">=</span> <span class="n">sample_token</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+            <span class="c1"># pydevd.settrace(suspend=True)</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_image</span><span class="p">(</span>
+                <span class="n">instance_token</span><span class="o">=</span><span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span><span class="o">=</span><span class="n">sample_token</span>
+            <span class="p">)</span>
+            <span class="n">agent_state_vector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_agent_state</span><span class="p">(</span>
+                <span class="n">instance_token</span><span class="o">=</span><span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span><span class="o">=</span><span class="n">sample_token</span>
+            <span class="p">)</span>
+            <span class="n">agent_state_vector</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">agent_state_vector</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_all_valid</span><span class="p">:</span>
+                <span class="n">future_for_agent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_possible_trajectories</span><span class="p">(</span>
+                    <span class="n">instance_token</span><span class="o">=</span><span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span><span class="o">=</span><span class="n">sample_token</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">future_for_agent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_target_trajectories</span><span class="p">(</span>
+                    <span class="n">instance_token</span><span class="o">=</span><span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span><span class="o">=</span><span class="n">sample_token</span>
+                <span class="p">)</span>
+            <span class="k">return</span> <span class="n">image</span><span class="p">,</span> <span class="n">agent_state_vector</span><span class="p">,</span> <span class="n">future_for_agent</span>
+
+        <span class="n">instance_dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">(</span><span class="n">instance_tokens</span><span class="p">)</span>
+        <span class="n">sample_dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">(</span><span class="n">sample_tokens</span><span class="p">)</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">zip</span><span class="p">((</span><span class="n">instance_dataset</span><span class="p">,</span> <span class="n">sample_dataset</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">shuffle</span><span class="p">:</span>
+            <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token_pairs</span><span class="p">))</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">py_function</span><span class="p">(</span>
+                <span class="n">read_data</span><span class="p">,</span>
+                <span class="n">inp</span><span class="o">=</span><span class="p">[</span><span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span><span class="p">],</span>
+                <span class="n">Tout</span><span class="o">=</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">image</span><span class="p">,</span> <span class="n">agent_state_vector</span><span class="p">,</span> <span class="n">future_for_agent</span><span class="p">:</span> <span class="p">(</span>
+                <span class="p">{</span><span class="s1">&#39;image&#39;</span><span class="p">:</span> <span class="n">image</span><span class="p">,</span> <span class="s1">&#39;state&#39;</span><span class="p">:</span> <span class="n">agent_state_vector</span><span class="p">},</span>
+                <span class="n">future_for_agent</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">dataset</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 - 2022, Continental Heat AI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

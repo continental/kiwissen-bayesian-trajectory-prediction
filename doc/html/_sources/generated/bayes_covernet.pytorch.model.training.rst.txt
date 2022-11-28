@@ -1,0 +1,40 @@
+bayes\_covernet.pytorch.model.training
+======================================
+    
+.. rubric:: Description
+
+.. automodule:: bayes_covernet.pytorch.model.training
+   
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    .. rubric:: Classes
+
+    .. autosummary::
+        :toctree:
+        :nosignatures:
+        
+        ~Trainer
+        
+
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    

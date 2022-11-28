@@ -1,0 +1,39 @@
+bayes\_covernet.util.config
+===========================
+    
+.. rubric:: Description
+
+.. automodule:: bayes_covernet.util.config
+   
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    .. rubric:: Functions
+
+    .. autosummary::
+        :toctree:
+        
+        ~paramSearch
+        
+
+    
+    

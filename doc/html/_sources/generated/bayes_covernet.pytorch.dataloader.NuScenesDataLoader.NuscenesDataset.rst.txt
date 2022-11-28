@@ -1,0 +1,13 @@
+bayes\_covernet.pytorch.dataloader.NuScenesDataLoader.NuscenesDataset
+=====================================================================
+
+.. currentmodule:: bayes_covernet.pytorch.dataloader.NuScenesDataLoader
+
+.. autoclass:: NuscenesDataset
+   :members:
+   :show-inheritance:
+   :private-members:
+   :undoc-members:
+   :inherited-members:
+   
+   .. autoclasstoc::

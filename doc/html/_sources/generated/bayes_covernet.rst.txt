@@ -1,0 +1,46 @@
+﻿bayes\_covernet
+===============
+    
+.. rubric:: Description
+
+.. automodule:: bayes_covernet
+   
+    
+    
+    .. rubric:: Sub-modules
+
+    .. autosummary::
+        :toctree:
+        :recursive:
+        
+        ~bayes_covernet.main
+        
+        ~bayes_covernet.pytorch
+        
+        ~bayes_covernet.tf
+        
+        ~bayes_covernet.util
+        
+
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    

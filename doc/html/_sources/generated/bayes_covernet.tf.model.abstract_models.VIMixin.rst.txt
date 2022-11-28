@@ -1,0 +1,13 @@
+bayes\_covernet.tf.model.abstract\_models.VIMixin
+=================================================
+
+.. currentmodule:: bayes_covernet.tf.model.abstract_models
+
+.. autoclass:: VIMixin
+   :members:
+   :show-inheritance:
+   :private-members:
+   :undoc-members:
+   :inherited-members:
+   
+   .. autoclasstoc::

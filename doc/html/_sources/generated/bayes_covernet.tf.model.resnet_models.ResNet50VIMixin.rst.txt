@@ -1,0 +1,13 @@
+bayes\_covernet.tf.model.resnet\_models.ResNet50VIMixin
+=======================================================
+
+.. currentmodule:: bayes_covernet.tf.model.resnet_models
+
+.. autoclass:: ResNet50VIMixin
+   :members:
+   :show-inheritance:
+   :private-members:
+   :undoc-members:
+   :inherited-members:
+   
+   .. autoclasstoc::

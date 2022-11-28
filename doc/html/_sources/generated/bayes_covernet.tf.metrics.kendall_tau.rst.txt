@@ -1,0 +1,6 @@
+bayes\_covernet.tf.metrics.kendall\_tau
+=======================================
+
+.. currentmodule:: bayes_covernet.tf.metrics
+
+.. autofunction:: kendall_tau

@@ -1,0 +1,6 @@
+bayes\_covernet.main.populate\_cache
+====================================
+
+.. currentmodule:: bayes_covernet.main
+
+.. autofunction:: populate_cache

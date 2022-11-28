@@ -1,0 +1,6 @@
+bayes\_covernet.tf.model.variational.test\_step\_repeated
+=========================================================
+
+.. currentmodule:: bayes_covernet.tf.model.variational
+
+.. autofunction:: test_step_repeated

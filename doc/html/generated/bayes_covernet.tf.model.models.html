@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bayes_covernet.tf.model.models &mdash; Bayesian Continual Learning  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/my_theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/autoclasstoc.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="bayes_covernet.tf.model.models.Covernet" href="bayes_covernet.tf.model.models.Covernet.html" />
+    <link rel="prev" title="bayes_covernet.tf.model.covernet_utils.multipath_to_trajs" href="bayes_covernet.tf.model.covernet_utils.multipath_to_trajs.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Bayesian Continual Learning
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../mdfiles.html">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../apidoc.html">API Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="bayes_covernet.html">bayes_covernet</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="bayes_covernet.main.html">bayes_covernet.main</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bayes_covernet.pytorch.html">bayes_covernet.pytorch</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="bayes_covernet.tf.html">bayes_covernet.tf</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="bayes_covernet.tf.dataloader.html">bayes_covernet.tf.dataloader</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bayes_covernet.tf.fixes.html">bayes_covernet.tf.fixes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bayes_covernet.tf.metrics.html">bayes_covernet.tf.metrics</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="bayes_covernet.tf.model.html">bayes_covernet.tf.model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bayes_covernet.tf.util.html">bayes_covernet.tf.util</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bayes_covernet.util.html">bayes_covernet.util</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">Code Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../licenses.html">Licenses</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Bayesian Continual Learning</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../apidoc.html">API Documentation</a> &raquo;</li>
+          <li><a href="bayes_covernet.html">bayes_covernet</a> &raquo;</li>
+          <li><a href="bayes_covernet.tf.html">bayes_covernet.tf</a> &raquo;</li>
+          <li><a href="bayes_covernet.tf.model.html">bayes_covernet.tf.model</a> &raquo;</li>
+      <li>bayes_covernet.tf.model.models</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/generated/bayes_covernet.tf.model.models.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="bayes-covernet-tf-model-models">
+<h1>bayes_covernet.tf.model.models<a class="headerlink" href="#bayes-covernet-tf-model-models" title="Permalink to this headline"></a></h1>
+<p class="rubric">Description</p>
+<span class="target" id="module-bayes_covernet.tf.model.models"></span><p>Collection of models.</p>
+<p>Copyright (c) 2021-2022 Continental AG.</p>
+<p>&#64;author: Christian Wirth &lt;<a class="reference external" href="mailto:christian&#46;2&#46;wirth&#37;&#52;&#48;continental-corporation&#46;com">christian<span>&#46;</span>2<span>&#46;</span>wirth<span>&#64;</span>continental-corporation<span>&#46;</span>com</a>&gt;</p>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="bayes_covernet.tf.model.models.Covernet.html#bayes_covernet.tf.model.models.Covernet" title="bayes_covernet.tf.model.models.Covernet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Covernet</span></code></a></p></td>
+<td><p>Model factory for CoverNet predictor</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="bayes_covernet.tf.model.models.CovernetDet.html#bayes_covernet.tf.model.models.CovernetDet" title="bayes_covernet.tf.model.models.CovernetDet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CovernetDet</span></code></a></p></td>
+<td><p>Deterministic CoverNet model</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="bayes_covernet.tf.model.models.CovernetSNGP.html#bayes_covernet.tf.model.models.CovernetSNGP" title="bayes_covernet.tf.model.models.CovernetSNGP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CovernetSNGP</span></code></a></p></td>
+<td><p>Spectral normalized Gaussian process CoverNet model</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="bayes_covernet.tf.model.models.CovernetVI.html#bayes_covernet.tf.model.models.CovernetVI" title="bayes_covernet.tf.model.models.CovernetVI"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CovernetVI</span></code></a></p></td>
+<td><p>Variational Inference CoverNet model</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="bayes_covernet.tf.model.models.MultiPath.html#bayes_covernet.tf.model.models.MultiPath" title="bayes_covernet.tf.model.models.MultiPath"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MultiPath</span></code></a></p></td>
+<td><p>Model factory for MultiPath predictor</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="bayes_covernet.tf.model.models.MultiPathDet.html#bayes_covernet.tf.model.models.MultiPathDet" title="bayes_covernet.tf.model.models.MultiPathDet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MultiPathDet</span></code></a></p></td>
+<td><p>Deterministic covernet model</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="bayes_covernet.tf.model.models.Covernet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Covernet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_size</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/model/models.html#Covernet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.model.models.Covernet" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="bayes_covernet.tf.model.resnet_models.ResNet50ModelFactory.html#bayes_covernet.tf.model.resnet_models.ResNet50ModelFactory" title="bayes_covernet.tf.model.resnet_models.ResNet50ModelFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">bayes_covernet.tf.model.resnet_models.ResNet50ModelFactory</span></code></a></p>
+<p>Model factory for CoverNet predictor</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset_size</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of examples in the dataset</p></li>
+<li><p><strong>**kwargs</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a>) – <p>Hyperparameters</p>
+</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_covernet.tf.model.models.Covernet.get_loss">
+<span class="sig-name descname"><span class="pre">get_loss</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/model/models.html#Covernet.get_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.model.models.Covernet.get_loss" title="Permalink to this definition"></a></dt>
+<dd><p>Must return a loss function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Loss function</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Callable</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_covernet.tf.model.models.Covernet.get_mapper">
+<span class="sig-name descname"><span class="pre">get_mapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/model/models.html#Covernet.get_mapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.model.models.Covernet.get_mapper" title="Permalink to this definition"></a></dt>
+<dd><p>Has to return functions mapping y_true, y_pred into coordinate (trajectory) space and categorical space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>mapper to categorical, mappter to multi-categorical, mapper to trajectory</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Callable, Callable, Callable</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bayes_covernet.tf.model.models.CovernetDet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CovernetDet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">momentum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps_set</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/model/models.html#CovernetDet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.model.models.CovernetDet" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="bayes_covernet.tf.model.resnet_models.ResNet50DetMixin.html#bayes_covernet.tf.model.resnet_models.ResNet50DetMixin" title="bayes_covernet.tf.model.resnet_models.ResNet50DetMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">bayes_covernet.tf.model.resnet_models.ResNet50DetMixin</span></code></a>, <a class="reference internal" href="bayes_covernet.tf.model.models.Covernet.html#bayes_covernet.tf.model.models.Covernet" title="bayes_covernet.tf.model.models.Covernet"><code class="xref py py-class docutils literal notranslate"><span class="pre">bayes_covernet.tf.model.models.Covernet</span></code></a></p>
+<p>Deterministic CoverNet model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset_size</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of examples in the dataset</p></li>
+<li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of example sper batch</p></li>
+<li><p><strong>lr</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – learning rate</p></li>
+<li><p><strong>momentum</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – momentum</p></li>
+<li><p><strong>eps_set</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Epsilon of the Covernet trajectory set (2,4,8)</p></li>
+<li><p><strong>multi_label</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – If true, assumes multiple, valid trajectories per example</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bayes_covernet.tf.model.models.CovernetSNGP">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CovernetSNGP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">momentum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps_set</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_inducing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gp_kernel_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/model/models.html#CovernetSNGP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.model.models.CovernetSNGP" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="bayes_covernet.tf.model.resnet_models.ResNet50SNGPMixin.html#bayes_covernet.tf.model.resnet_models.ResNet50SNGPMixin" title="bayes_covernet.tf.model.resnet_models.ResNet50SNGPMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">bayes_covernet.tf.model.resnet_models.ResNet50SNGPMixin</span></code></a>, <a class="reference internal" href="bayes_covernet.tf.model.models.Covernet.html#bayes_covernet.tf.model.models.Covernet" title="bayes_covernet.tf.model.models.Covernet"><code class="xref py py-class docutils literal notranslate"><span class="pre">bayes_covernet.tf.model.models.Covernet</span></code></a></p>
+<p>Spectral normalized Gaussian process CoverNet model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset_size</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of examples in the dataset</p></li>
+<li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of example sper batch</p></li>
+<li><p><strong>lr</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – learning rate</p></li>
+<li><p><strong>momentum</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – momentum</p></li>
+<li><p><strong>eps_set</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Epsilon of the Covernet trajectory set (2,4,8)</p></li>
+<li><p><strong>spectral_norm</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Spectral normalization constant</p></li>
+<li><p><strong>num_inducing</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of kernel inducing points</p></li>
+<li><p><strong>gp_kernel_scale</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Scale factor of the RBF kernel</p></li>
+<li><p><strong>multi_label</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – If true, assumes multiple, valid trajectories per example</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bayes_covernet.tf.model.models.CovernetVI">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CovernetVI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">momentum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.002</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps_set</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">posterior_temp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gvcl_lambda</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prior_stddev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stddev_mean_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warmup_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anneal_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr_warmup_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr_anneal_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr_decay_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_mc_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freeze_mean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cycle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cycle_power</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_renyi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tied_mean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prior_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/model/models.html#CovernetVI"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.model.models.CovernetVI" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="bayes_covernet.tf.model.resnet_models.ResNet50VIMixin.html#bayes_covernet.tf.model.resnet_models.ResNet50VIMixin" title="bayes_covernet.tf.model.resnet_models.ResNet50VIMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">bayes_covernet.tf.model.resnet_models.ResNet50VIMixin</span></code></a>, <a class="reference internal" href="bayes_covernet.tf.model.models.Covernet.html#bayes_covernet.tf.model.models.Covernet" title="bayes_covernet.tf.model.models.Covernet"><code class="xref py py-class docutils literal notranslate"><span class="pre">bayes_covernet.tf.model.models.Covernet</span></code></a></p>
+<p>Variational Inference CoverNet model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset_size</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of examples in the dataset</p></li>
+<li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of example sper batch</p></li>
+<li><p><strong>lr</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – learning rate</p></li>
+<li><p><strong>momentum</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – momentum</p></li>
+<li><p><strong>eps_set</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Epsilon of the Covernet trajectory set (2,4,8)</p></li>
+<li><p><strong>posterior_temp</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em>,</em><em>None</em>) – Temperature of the posterior (&lt;=1.0), None results in tempering by 1/batch_size. Identical to GVCL beta.</p></li>
+<li><p><strong>gvcl_lambda</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Lambda constant of GVCL, requires a prior_model</p></li>
+<li><p><strong>prior_stddev</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Stddev of the prior</p></li>
+<li><p><strong>stddev_mean_init</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Average initialization value for the posterior stddev</p></li>
+<li><p><strong>warmup_epochs</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of epochs without KL regularizer</p></li>
+<li><p><strong>anneal_epochs</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of epochs to scale the KL weight from 0 to 1</p></li>
+<li><p><strong>train_mc_samples</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of Monte Carlo samples during training</p></li>
+<li><p><strong>multi_label</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – If true, assumes multiple, valid trajectories per example</p></li>
+<li><p><strong>freeze_mean</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – If true, initial parameter mean is frozen. ‘adaptive’ freezes the mean if tempered KL &gt; nll</p></li>
+<li><p><strong>use_renyi</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Use Renyi alpha divergence instead of KL</p></li>
+<li><p><strong>tied_mean</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – If true, the prior mean is always identical to the posterior mean. Only valid for prior_model=False (default)</p></li>
+<li><p><strong>prior_model</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Checkpoint name of the prior model. In case of a CovernetDet model, weights are loaded as prior mean (continual learning mode).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bayes_covernet.tf.model.models.MultiPath">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultiPath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_size</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/model/models.html#MultiPath"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.model.models.MultiPath" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="bayes_covernet.tf.model.resnet_models.ResNet50ModelFactory.html#bayes_covernet.tf.model.resnet_models.ResNet50ModelFactory" title="bayes_covernet.tf.model.resnet_models.ResNet50ModelFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">bayes_covernet.tf.model.resnet_models.ResNet50ModelFactory</span></code></a></p>
+<p>Model factory for MultiPath predictor</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset_size</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of examples in the dataset</p></li>
+<li><p><strong>**kwargs</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a>) – <p>Hyperparameters</p>
+</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_covernet.tf.model.models.MultiPath.get_loss">
+<span class="sig-name descname"><span class="pre">get_loss</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/model/models.html#MultiPath.get_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.model.models.MultiPath.get_loss" title="Permalink to this definition"></a></dt>
+<dd><p>Must return a loss function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Loss function</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Callable</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_covernet.tf.model.models.MultiPath.get_mapper">
+<span class="sig-name descname"><span class="pre">get_mapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/model/models.html#MultiPath.get_mapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.model.models.MultiPath.get_mapper" title="Permalink to this definition"></a></dt>
+<dd><p>Has to return functions mapping y_true, y_pred into coordinate (trajectory) space and categorical space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>mapper to categorical, mappter to multi-categorical, mapper to trajectory</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Callable, Callable, Callable</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="bayes_covernet.tf.model.models.MultiPathDet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultiPathDet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">momentum</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps_set</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov_approx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'diag'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/model/models.html#MultiPathDet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.model.models.MultiPathDet" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="bayes_covernet.tf.model.resnet_models.ResNet50DetMVNMixin.html#bayes_covernet.tf.model.resnet_models.ResNet50DetMVNMixin" title="bayes_covernet.tf.model.resnet_models.ResNet50DetMVNMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">bayes_covernet.tf.model.resnet_models.ResNet50DetMVNMixin</span></code></a>, <a class="reference internal" href="bayes_covernet.tf.model.models.MultiPath.html#bayes_covernet.tf.model.models.MultiPath" title="bayes_covernet.tf.model.models.MultiPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">bayes_covernet.tf.model.models.MultiPath</span></code></a></p>
+<p>Deterministic covernet model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset_size</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of examples in the dataset</p></li>
+<li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of example sper batch</p></li>
+<li><p><strong>lr</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – learning rate</p></li>
+<li><p><strong>momentum</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – momentum</p></li>
+<li><p><strong>eps_set</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Epsilon of the Covernet trajectory set (2,4,8)</p></li>
+<li><p><strong>multi_label</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – If true, assumes multiple, valid trajectories per example</p></li>
+<li><p><strong>cov_approx</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Covariance matrix approximation: fixed, diag or tril</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="bayes_covernet.tf.model.covernet_utils.multipath_to_trajs.html" class="btn btn-neutral float-left" title="bayes_covernet.tf.model.covernet_utils.multipath_to_trajs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bayes_covernet.tf.model.models.Covernet.html" class="btn btn-neutral float-right" title="bayes_covernet.tf.model.models.Covernet" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 - 2022, Continental Heat AI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+bayes\_covernet.util.config.paramSearch
+=======================================
+
+.. currentmodule:: bayes_covernet.util.config
+
+.. autofunction:: paramSearch

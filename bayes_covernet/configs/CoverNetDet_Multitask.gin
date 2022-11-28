@@ -1,0 +1,29 @@
+# Default Configuration for deterministic CoverNet with multitask training
+NuscenesDataset.data_dir = ''
+NuscenesDataset.data_version = 'v1.0-trainval'
+
+train/NuscenesDataset.split = 'train'
+val/NuscenesDataset.split = 'train_val'
+test/NuscenesDataset.split = 'val'
+
+NuscenesDataset.multitask = True
+Trainer.multitask_lambda= 0.01
+
+Trainer.name ="Covernet"
+Trainer.model_factory = @CovernetDet
+Trainer.batch_size=16 # 5
+Trainer.epochs=20
+Trainer.eps_set=8
+Trainer.lr=1e-3 # 0.00083
+
+Trainer.early_stop_delay = 0
+Trainer.early_stop_patience = 10
+
+paramSearch.space = {#"lr": ("logfloat", 0.0001, 0.01),
+					"multitask_lambda":("logfloat", 0.01, 1.0),
+            		#"batch_size": ("int", 4, 16),
+           		    # "spectral_norm": ("float", 1.0, 2.5),
+            		# "gp_kernel_scale": ("float", 0.25, 1.5),     
+            		# "num_inducing": ("int", 512, 2048)
+            		}  
+paramSearch.numTrials = 8

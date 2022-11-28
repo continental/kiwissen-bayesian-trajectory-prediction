@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bayes_covernet.tf.model.resnet_models &mdash; Bayesian Continual Learning  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/my_theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/autoclasstoc.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> Bayesian Continual Learning
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../readme.html">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../licenses.html">Licenses</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Bayesian Continual Learning</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>bayes_covernet.tf.model.resnet_models</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bayes_covernet.tf.model.resnet_models</h1><div class="highlight"><pre>
+<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">ResNet based models Mixins</span>
+
+<span class="sd">Copyright (c) 2021-2022 Continental AG.</span>
+
+<span class="sd">@author: Christian Wirth &lt;christian.2.wirth@continental-corporation.com&gt;</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">from</span> <span class="nn">tensorflow.keras</span> <span class="kn">import</span> <span class="n">layers</span>
+<span class="kn">from</span> <span class="nn">tensorflow_addons.layers.adaptive_pooling</span> <span class="kn">import</span> <span class="n">AdaptiveAveragePooling2D</span>
+<span class="kn">from</span> <span class="nn">uncertainty_baselines.models.resnet50_deterministic</span> <span class="kn">import</span> <span class="n">resnet50_deterministic</span>
+<span class="kn">from</span> <span class="nn">uncertainty_baselines.models.resnet50_sngp</span> <span class="kn">import</span> <span class="n">resnet50_sngp</span>
+
+<span class="kn">from</span> <span class="nn">bayes_covernet.tf.model.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ModelFactory</span><span class="p">,</span>
+    <span class="n">DetMixin</span><span class="p">,</span>
+    <span class="n">SNGPMixin</span><span class="p">,</span>
+    <span class="n">VIMixin</span><span class="p">,</span>
+    <span class="n">DetMVNMixin</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">bayes_covernet.tf.model.resnet50_variational</span> <span class="kn">import</span> <span class="n">resnet50_variational</span>
+
+
+<div class="viewcode-block" id="ResNet50ModelFactory"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.resnet_models.ResNet50ModelFactory.html#bayes_covernet.tf.model.resnet_models.ResNet50ModelFactory">[docs]</a><span class="k">class</span> <span class="nc">ResNet50ModelFactory</span><span class="p">(</span><span class="n">ModelFactory</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    ModelFactory for a RestNet50 backbone.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ResNet50ModelFactory.get_resnet50"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.resnet_models.ResNet50ModelFactory.html#bayes_covernet.tf.model.resnet_models.ResNet50ModelFactory.get_resnet50">[docs]</a>    <span class="k">def</span> <span class="nf">get_resnet50</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="ResNet50ModelFactory.get_backbone"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.resnet_models.ResNet50ModelFactory.html#bayes_covernet.tf.model.resnet_models.ResNet50ModelFactory.get_backbone">[docs]</a>    <span class="k">def</span> <span class="nf">get_backbone</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">):</span>
+        <span class="n">backbone_mdl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_resnet50</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="n">backbone_pool</span> <span class="o">=</span> <span class="n">AdaptiveAveragePooling2D</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))(</span><span class="n">backbone_mdl</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
+        <span class="n">backbone_features</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">Flatten</span><span class="p">()(</span><span class="n">backbone_pool</span><span class="p">)</span>
+        <span class="n">agent_state_vector</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">Input</span><span class="p">((</span><span class="mi">3</span><span class="p">))</span>
+        <span class="n">logits</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">Concatenate</span><span class="p">()([</span><span class="n">backbone_features</span><span class="p">,</span> <span class="n">agent_state_vector</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;image&#39;</span><span class="p">:</span> <span class="n">backbone_mdl</span><span class="o">.</span><span class="n">input</span><span class="p">,</span> <span class="s1">&#39;state&#39;</span><span class="p">:</span> <span class="n">agent_state_vector</span><span class="p">},</span> <span class="n">logits</span></div></div>
+
+
+<div class="viewcode-block" id="ResNet50DetMixin"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.resnet_models.ResNet50DetMixin.html#bayes_covernet.tf.model.resnet_models.ResNet50DetMixin">[docs]</a><span class="k">class</span> <span class="nc">ResNet50DetMixin</span><span class="p">(</span><span class="n">DetMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Deterministic ResNet50 Backbone with deterministic class output.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ResNet50DetMixin.get_resnet50"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.resnet_models.ResNet50DetMixin.html#bayes_covernet.tf.model.resnet_models.ResNet50DetMixin.get_resnet50">[docs]</a>    <span class="k">def</span> <span class="nf">get_resnet50</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">):</span>
+        <span class="n">backbone_mdl</span> <span class="o">=</span> <span class="n">resnet50_deterministic</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">backbone_mdl</span></div></div>
+
+
+<div class="viewcode-block" id="ResNet50DetMVNMixin"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.resnet_models.ResNet50DetMVNMixin.html#bayes_covernet.tf.model.resnet_models.ResNet50DetMVNMixin">[docs]</a><span class="k">class</span> <span class="nc">ResNet50DetMVNMixin</span><span class="p">(</span><span class="n">DetMVNMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Deterministic ResNet50 Backbone with deterministic class output and multivariate normal regression outputs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ResNet50DetMVNMixin.get_resnet50"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.resnet_models.ResNet50DetMVNMixin.html#bayes_covernet.tf.model.resnet_models.ResNet50DetMVNMixin.get_resnet50">[docs]</a>    <span class="k">def</span> <span class="nf">get_resnet50</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">):</span>
+        <span class="n">backbone_mdl</span> <span class="o">=</span> <span class="n">resnet50_deterministic</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">backbone_mdl</span></div></div>
+
+
+<div class="viewcode-block" id="ResNet50SNGPMixin"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.resnet_models.ResNet50SNGPMixin.html#bayes_covernet.tf.model.resnet_models.ResNet50SNGPMixin">[docs]</a><span class="k">class</span> <span class="nc">ResNet50SNGPMixin</span><span class="p">(</span><span class="n">SNGPMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Deterministic ResNet50 model with spectral normalization and GP head</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ResNet50SNGPMixin.get_resnet50"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.resnet_models.ResNet50SNGPMixin.html#bayes_covernet.tf.model.resnet_models.ResNet50SNGPMixin.get_resnet50">[docs]</a>    <span class="k">def</span> <span class="nf">get_resnet50</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">):</span>
+        <span class="n">backbone_mdl</span> <span class="o">=</span> <span class="n">resnet50_sngp</span><span class="p">(</span>
+            <span class="n">input_shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s2">&quot;batch_size&quot;</span><span class="p">],</span>
+            <span class="n">num_classes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">use_mc_dropout</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">dropout_rate</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+            <span class="n">filterwise_dropout</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">use_gp_layer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">gp_hidden_dim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">gp_scale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">gp_bias</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">gp_input_normalization</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">gp_random_feature_type</span><span class="o">=</span><span class="s1">&#39;orf&#39;</span><span class="p">,</span>
+            <span class="n">gp_cov_discount_factor</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">gp_cov_ridge_penalty</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">gp_output_imagenet_initializer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">use_spec_norm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s2">&quot;spectral_norm&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">spec_norm_iteration</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">spec_norm_bound</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+            <span class="n">omit_last_layer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">backbone_mdl</span></div></div>
+
+
+<div class="viewcode-block" id="ResNet50VIMixin"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.resnet_models.ResNet50VIMixin.html#bayes_covernet.tf.model.resnet_models.ResNet50VIMixin">[docs]</a><span class="k">class</span> <span class="nc">ResNet50VIMixin</span><span class="p">(</span><span class="n">VIMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Variational ResNet50 model</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ResNet50VIMixin.get_resnet50"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.resnet_models.ResNet50VIMixin.html#bayes_covernet.tf.model.resnet_models.ResNet50VIMixin.get_resnet50">[docs]</a>    <span class="k">def</span> <span class="nf">get_resnet50</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">):</span>
+
+        <span class="n">backbone_mdl</span> <span class="o">=</span> <span class="n">resnet50_variational</span><span class="p">(</span>
+            <span class="n">input_shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span>
+            <span class="n">num_classes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">prior_stddev</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;prior_stddev&#39;</span><span class="p">],</span>
+            <span class="n">dataset_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">effective_dataset_size</span><span class="p">,</span>
+            <span class="n">stddev_mean_init</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;stddev_mean_init&#39;</span><span class="p">],</span>
+            <span class="n">stddev_stddev_init</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+            <span class="n">tied_mean_prior</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;tied_mean&#39;</span><span class="p">],</span>
+            <span class="n">omit_last_layer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">backbone_mdl</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 - 2022, Continental Heat AI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

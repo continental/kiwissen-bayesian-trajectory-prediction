@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bayes_covernet.tf.model.resnet50_variational &mdash; Bayesian Continual Learning  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/my_theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/autoclasstoc.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> Bayesian Continual Learning
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../readme.html">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../licenses.html">Licenses</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Bayesian Continual Learning</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>bayes_covernet.tf.model.resnet50_variational</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bayes_covernet.tf.model.resnet50_variational</h1><div class="highlight"><pre>
+<span></span><span class="c1"># coding=utf-8</span>
+<span class="c1"># Copyright 2021 The Uncertainty Baselines Authors.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">ResNet50 Keras model with variational Bayesian layers.</span>
+
+<span class="sd">Based on https://github.com/google/uncertainty-baselines/blob/main/uncertainty_baselines/models/resnet50_variational.py</span>
+
+<span class="sd">@author: Christian Wirth &lt;christian.2.wirth@continental-corporation.com&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">string</span>
+
+<span class="kn">from</span> <span class="nn">absl</span> <span class="kn">import</span> <span class="n">logging</span>
+<span class="kn">from</span> <span class="nn">uncertainty_baselines.models.variational_utils</span> <span class="kn">import</span> <span class="n">get_kernel_regularizer_class</span>
+<span class="kn">from</span> <span class="nn">uncertainty_baselines.models.variational_utils</span> <span class="kn">import</span> <span class="n">init_kernel_regularizer</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">edward2</span> <span class="k">as</span> <span class="nn">ed</span>  <span class="c1"># pylint: disable=g-import-not-at-top</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Skipped edward2 import due to ImportError.&#39;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">BatchNormalization</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>  <span class="c1"># pylint: disable=invalid-name</span>
+    <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">,</span>
+    <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>  <span class="c1"># using epsilon and momentum defaults from Torch</span>
+    <span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">Conv2DFlipout</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>  <span class="c1"># pylint: disable=invalid-name</span>
+    <span class="n">ed</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Conv2DFlipout</span><span class="p">,</span> <span class="n">use_bias</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="bottleneck_block"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.resnet50_variational.bottleneck_block.html#bayes_covernet.tf.model.resnet50_variational.bottleneck_block">[docs]</a><span class="k">def</span> <span class="nf">bottleneck_block</span><span class="p">(</span>
+    <span class="n">inputs</span><span class="p">,</span>
+    <span class="n">filters</span><span class="p">,</span>
+    <span class="n">stage</span><span class="p">,</span>
+    <span class="n">block</span><span class="p">,</span>
+    <span class="n">strides</span><span class="p">,</span>
+    <span class="n">prior_stddev</span><span class="p">,</span>
+    <span class="n">dataset_size</span><span class="p">,</span>
+    <span class="n">stddev_mean_init</span><span class="p">,</span>
+    <span class="n">stddev_stddev_init</span><span class="p">,</span>
+    <span class="n">tied_mean_prior</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Residual block with 1x1 -&gt; 3x3 -&gt; 1x1 convs in main path.</span>
+
+<span class="sd">    Note that strides appear in the second conv (3x3) rather than the first (1x1).</span>
+<span class="sd">    This is also known as &quot;ResNet v1.5&quot; as it differs from He et al. (2015)</span>
+<span class="sd">    (http://torch.ch/blog/2016/02/04/resnets.html).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      inputs: tf.Tensor.</span>
+<span class="sd">      filters: list of integers, the filters of 3 conv layer at main path</span>
+<span class="sd">      stage: integer, current stage label, used for generating layer names</span>
+<span class="sd">      block: &#39;a&#39;,&#39;b&#39;..., current block label, used for generating layer names</span>
+<span class="sd">      strides: Strides for the second conv layer in the block.</span>
+<span class="sd">      prior_stddev: Fixed standard deviation for weight prior.</span>
+<span class="sd">      dataset_size: Dataset size to properly scale the KL.</span>
+<span class="sd">      stddev_mean_init: float, initializes the mean of the TruncatedNormal from</span>
+<span class="sd">        which we sample the initial posterior stddev: mean =</span>
+<span class="sd">          np.log(np.expm1(stddev_mean_init))</span>
+<span class="sd">      stddev_stddev_init: float, stddev of the TruncatedNormal distribution used</span>
+<span class="sd">        to initialize the stddev of the variational posterior.</span>
+<span class="sd">      tied_mean_prior: bool, if True, fix the mean of the prior to that of the</span>
+<span class="sd">        variational posterior, which causes the KL to only penalize the weight</span>
+<span class="sd">        posterior&#39;s standard deviation, and not its mean.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      tf.Tensor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">filters1</span><span class="p">,</span> <span class="n">filters2</span><span class="p">,</span> <span class="n">filters3</span> <span class="o">=</span> <span class="n">filters</span>
+    <span class="n">conv_name_base</span> <span class="o">=</span> <span class="s1">&#39;res&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">stage</span><span class="p">)</span> <span class="o">+</span> <span class="n">block</span> <span class="o">+</span> <span class="s1">&#39;_branch&#39;</span>
+    <span class="n">bn_name_base</span> <span class="o">=</span> <span class="s1">&#39;bn&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">stage</span><span class="p">)</span> <span class="o">+</span> <span class="n">block</span> <span class="o">+</span> <span class="s1">&#39;_branch&#39;</span>
+    <span class="n">kernel_regularizer_class</span> <span class="o">=</span> <span class="n">get_kernel_regularizer_class</span><span class="p">(</span>
+        <span class="n">tied_mean_prior</span><span class="o">=</span><span class="n">tied_mean_prior</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Initialize kernel with given fixed stddev for prior, or compute the</span>
+    <span class="c1"># stddev as sqrt(2 / fan_in) (as is done for the stddev in He</span>
+    <span class="c1"># initialization).</span>
+    <span class="n">kernel_regularizer_2a</span> <span class="o">=</span> <span class="n">init_kernel_regularizer</span><span class="p">(</span>
+        <span class="n">kernel_regularizer_class</span><span class="p">,</span>
+        <span class="n">dataset_size</span><span class="p">,</span>
+        <span class="n">prior_stddev</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">,</span>
+        <span class="n">n_filters</span><span class="o">=</span><span class="n">filters1</span><span class="p">,</span>
+        <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">Conv2DFlipout</span><span class="p">(</span>
+        <span class="n">filters1</span><span class="p">,</span>
+        <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">kernel_initializer</span><span class="o">=</span><span class="n">ed</span><span class="o">.</span><span class="n">initializers</span><span class="o">.</span><span class="n">TrainableHeNormal</span><span class="p">(</span>
+            <span class="n">stddev_initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">initializers</span><span class="o">.</span><span class="n">TruncatedNormal</span><span class="p">(</span>
+                <span class="n">mean</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">expm1</span><span class="p">(</span><span class="n">stddev_mean_init</span><span class="p">)),</span> <span class="n">stddev</span><span class="o">=</span><span class="n">stddev_stddev_init</span>
+            <span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">kernel_regularizer</span><span class="o">=</span><span class="n">kernel_regularizer_2a</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">conv_name_base</span> <span class="o">+</span> <span class="s1">&#39;2a&#39;</span><span class="p">,</span>
+    <span class="p">)(</span><span class="n">inputs</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">BatchNormalization</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">bn_name_base</span> <span class="o">+</span> <span class="s1">&#39;2a&#39;</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Activation</span><span class="p">(</span><span class="s1">&#39;relu&#39;</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="n">kernel_regularizer_2b</span> <span class="o">=</span> <span class="n">init_kernel_regularizer</span><span class="p">(</span>
+        <span class="n">kernel_regularizer_class</span><span class="p">,</span>
+        <span class="n">dataset_size</span><span class="p">,</span>
+        <span class="n">prior_stddev</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">,</span>
+        <span class="n">n_filters</span><span class="o">=</span><span class="n">filters2</span><span class="p">,</span>
+        <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">Conv2DFlipout</span><span class="p">(</span>
+        <span class="n">filters2</span><span class="p">,</span>
+        <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">strides</span><span class="o">=</span><span class="n">strides</span><span class="p">,</span>
+        <span class="n">padding</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">,</span>
+        <span class="n">kernel_initializer</span><span class="o">=</span><span class="n">ed</span><span class="o">.</span><span class="n">initializers</span><span class="o">.</span><span class="n">TrainableHeNormal</span><span class="p">(</span>
+            <span class="n">stddev_initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">initializers</span><span class="o">.</span><span class="n">TruncatedNormal</span><span class="p">(</span>
+                <span class="n">mean</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">expm1</span><span class="p">(</span><span class="n">stddev_mean_init</span><span class="p">)),</span> <span class="n">stddev</span><span class="o">=</span><span class="n">stddev_stddev_init</span>
+            <span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">kernel_regularizer</span><span class="o">=</span><span class="n">kernel_regularizer_2b</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">conv_name_base</span> <span class="o">+</span> <span class="s1">&#39;2b&#39;</span><span class="p">,</span>
+    <span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">BatchNormalization</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">bn_name_base</span> <span class="o">+</span> <span class="s1">&#39;2b&#39;</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Activation</span><span class="p">(</span><span class="s1">&#39;relu&#39;</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="n">kernel_regularizer_2c</span> <span class="o">=</span> <span class="n">init_kernel_regularizer</span><span class="p">(</span>
+        <span class="n">kernel_regularizer_class</span><span class="p">,</span>
+        <span class="n">dataset_size</span><span class="p">,</span>
+        <span class="n">prior_stddev</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">,</span>
+        <span class="n">n_filters</span><span class="o">=</span><span class="n">filters3</span><span class="p">,</span>
+        <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">Conv2DFlipout</span><span class="p">(</span>
+        <span class="n">filters3</span><span class="p">,</span>
+        <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">kernel_initializer</span><span class="o">=</span><span class="n">ed</span><span class="o">.</span><span class="n">initializers</span><span class="o">.</span><span class="n">TrainableHeNormal</span><span class="p">(</span>
+            <span class="n">stddev_initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">initializers</span><span class="o">.</span><span class="n">TruncatedNormal</span><span class="p">(</span>
+                <span class="n">mean</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">expm1</span><span class="p">(</span><span class="n">stddev_mean_init</span><span class="p">)),</span> <span class="n">stddev</span><span class="o">=</span><span class="n">stddev_stddev_init</span>
+            <span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">kernel_regularizer</span><span class="o">=</span><span class="n">kernel_regularizer_2c</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">conv_name_base</span> <span class="o">+</span> <span class="s1">&#39;2c&#39;</span><span class="p">,</span>
+    <span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">BatchNormalization</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">bn_name_base</span> <span class="o">+</span> <span class="s1">&#39;2c&#39;</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="n">shortcut</span> <span class="o">=</span> <span class="n">inputs</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">is_compatible_with</span><span class="p">(</span><span class="n">shortcut</span><span class="o">.</span><span class="n">shape</span><span class="p">):</span>
+        <span class="n">kernel_regularizer_1</span> <span class="o">=</span> <span class="n">init_kernel_regularizer</span><span class="p">(</span>
+            <span class="n">kernel_regularizer_class</span><span class="p">,</span>
+            <span class="n">dataset_size</span><span class="p">,</span>
+            <span class="n">prior_stddev</span><span class="p">,</span>
+            <span class="n">shortcut</span><span class="p">,</span>
+            <span class="n">n_filters</span><span class="o">=</span><span class="n">filters3</span><span class="p">,</span>
+            <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">shortcut</span> <span class="o">=</span> <span class="n">Conv2DFlipout</span><span class="p">(</span>
+            <span class="n">filters3</span><span class="p">,</span>
+            <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">strides</span><span class="o">=</span><span class="n">strides</span><span class="p">,</span>
+            <span class="n">kernel_initializer</span><span class="o">=</span><span class="n">ed</span><span class="o">.</span><span class="n">initializers</span><span class="o">.</span><span class="n">TrainableHeNormal</span><span class="p">(</span>
+                <span class="n">stddev_initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">initializers</span><span class="o">.</span><span class="n">TruncatedNormal</span><span class="p">(</span>
+                    <span class="n">mean</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">expm1</span><span class="p">(</span><span class="n">stddev_mean_init</span><span class="p">)),</span> <span class="n">stddev</span><span class="o">=</span><span class="n">stddev_stddev_init</span>
+                <span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">kernel_regularizer</span><span class="o">=</span><span class="n">kernel_regularizer_1</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">conv_name_base</span> <span class="o">+</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span>
+        <span class="p">)(</span><span class="n">shortcut</span><span class="p">)</span>
+        <span class="n">shortcut</span> <span class="o">=</span> <span class="n">BatchNormalization</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">bn_name_base</span> <span class="o">+</span> <span class="s1">&#39;1&#39;</span><span class="p">)(</span><span class="n">shortcut</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">shortcut</span><span class="p">])</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Activation</span><span class="p">(</span><span class="s1">&#39;relu&#39;</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">x</span></div>
+
+
+<div class="viewcode-block" id="group"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.resnet50_variational.group.html#bayes_covernet.tf.model.resnet50_variational.group">[docs]</a><span class="k">def</span> <span class="nf">group</span><span class="p">(</span>
+    <span class="n">inputs</span><span class="p">,</span>
+    <span class="n">filters</span><span class="p">,</span>
+    <span class="n">num_blocks</span><span class="p">,</span>
+    <span class="n">stage</span><span class="p">,</span>
+    <span class="n">strides</span><span class="p">,</span>
+    <span class="n">prior_stddev</span><span class="p">,</span>
+    <span class="n">dataset_size</span><span class="p">,</span>
+    <span class="n">stddev_mean_init</span><span class="p">,</span>
+    <span class="n">stddev_stddev_init</span><span class="p">,</span>
+    <span class="n">tied_mean_prior</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;ResNet group.&quot;&quot;&quot;</span>
+    <span class="n">blocks</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">bottleneck_block</span><span class="p">(</span>
+        <span class="n">inputs</span><span class="p">,</span>
+        <span class="n">filters</span><span class="p">,</span>
+        <span class="n">stage</span><span class="p">,</span>
+        <span class="n">block</span><span class="o">=</span><span class="n">blocks</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="n">strides</span><span class="o">=</span><span class="n">strides</span><span class="p">,</span>
+        <span class="n">prior_stddev</span><span class="o">=</span><span class="n">prior_stddev</span><span class="p">,</span>
+        <span class="n">dataset_size</span><span class="o">=</span><span class="n">dataset_size</span><span class="p">,</span>
+        <span class="n">stddev_mean_init</span><span class="o">=</span><span class="n">stddev_mean_init</span><span class="p">,</span>
+        <span class="n">stddev_stddev_init</span><span class="o">=</span><span class="n">stddev_stddev_init</span><span class="p">,</span>
+        <span class="n">tied_mean_prior</span><span class="o">=</span><span class="n">tied_mean_prior</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_blocks</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">bottleneck_block</span><span class="p">(</span>
+            <span class="n">x</span><span class="p">,</span>
+            <span class="n">filters</span><span class="p">,</span>
+            <span class="n">stage</span><span class="p">,</span>
+            <span class="n">block</span><span class="o">=</span><span class="n">blocks</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="n">strides</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">prior_stddev</span><span class="o">=</span><span class="n">prior_stddev</span><span class="p">,</span>
+            <span class="n">dataset_size</span><span class="o">=</span><span class="n">dataset_size</span><span class="p">,</span>
+            <span class="n">stddev_mean_init</span><span class="o">=</span><span class="n">stddev_mean_init</span><span class="p">,</span>
+            <span class="n">stddev_stddev_init</span><span class="o">=</span><span class="n">stddev_stddev_init</span><span class="p">,</span>
+            <span class="n">tied_mean_prior</span><span class="o">=</span><span class="n">tied_mean_prior</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">x</span></div>
+
+
+<div class="viewcode-block" id="resnet50_variational"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.resnet50_variational.resnet50_variational.html#bayes_covernet.tf.model.resnet50_variational.resnet50_variational">[docs]</a><span class="k">def</span> <span class="nf">resnet50_variational</span><span class="p">(</span>
+    <span class="n">input_shape</span><span class="p">,</span>
+    <span class="n">num_classes</span><span class="p">,</span>
+    <span class="n">prior_stddev</span><span class="p">,</span>
+    <span class="n">dataset_size</span><span class="p">,</span>
+    <span class="n">stddev_mean_init</span><span class="p">,</span>
+    <span class="n">stddev_stddev_init</span><span class="p">,</span>
+    <span class="n">tied_mean_prior</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">omit_last_layer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Builds variational inference ResNet50.</span>
+
+<span class="sd">    Using strided conv, pooling, four groups of residual blocks, and pooling, the</span>
+<span class="sd">    network maps spatial features of size 224x224 -&gt; 112x112 -&gt; 56x56 -&gt; 28x28 -&gt;</span>
+<span class="sd">    14x14 -&gt; 7x7 (Table 1 of He et al. (2015)).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      input_shape: Shape tuple of input excluding batch dimension.</span>
+<span class="sd">      num_classes: Number of output classes.</span>
+<span class="sd">      prior_stddev: Fixed standard deviation for weight prior.</span>
+<span class="sd">      dataset_size: Dataset size to properly scale the KL.</span>
+<span class="sd">      stddev_mean_init: float, initializes the mean of the TruncatedNormal from</span>
+<span class="sd">        which we sample the initial posterior stddev: mean =</span>
+<span class="sd">          np.log(np.expm1(stddev_mean_init))</span>
+<span class="sd">      stddev_stddev_init: float, stddev of the TruncatedNormal distribution used</span>
+<span class="sd">        to initialize the stddev of the variational posterior.</span>
+<span class="sd">      tied_mean_prior: bool, if True, fix the mean of the prior to that of the</span>
+<span class="sd">        variational posterior, which causes the KL to only penalize the weight</span>
+<span class="sd">        posterior&#39;s standard deviation, and not its mean.</span>
+<span class="sd">      omit_last_layer: Optional. Omits the last pooling layer if it is to True.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      tf.keras.Model.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">kernel_regularizer_class</span> <span class="o">=</span> <span class="n">get_kernel_regularizer_class</span><span class="p">(</span>
+        <span class="n">tied_mean_prior</span><span class="o">=</span><span class="n">tied_mean_prior</span>
+    <span class="p">)</span>
+    <span class="n">inputs</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Input</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">input_shape</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">ZeroPadding2D</span><span class="p">(</span><span class="n">padding</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;conv1_pad&#39;</span><span class="p">)(</span><span class="n">inputs</span><span class="p">)</span>
+
+    <span class="c1"># Initialize kernel with given fixed stddev for prior, or compute the</span>
+    <span class="c1"># stddev as sqrt(2 / fan_in) (as is done for the stddev in He</span>
+    <span class="c1"># initialization).</span>
+    <span class="n">kernel_regularizer_conv1</span> <span class="o">=</span> <span class="n">init_kernel_regularizer</span><span class="p">(</span>
+        <span class="n">kernel_regularizer_class</span><span class="p">,</span>
+        <span class="n">dataset_size</span><span class="p">,</span>
+        <span class="n">prior_stddev</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">,</span>
+        <span class="n">n_filters</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+        <span class="n">kernel_size</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">Conv2DFlipout</span><span class="p">(</span>
+        <span class="mi">64</span><span class="p">,</span>
+        <span class="n">kernel_size</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
+        <span class="n">strides</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">padding</span><span class="o">=</span><span class="s1">&#39;valid&#39;</span><span class="p">,</span>
+        <span class="n">kernel_initializer</span><span class="o">=</span><span class="n">ed</span><span class="o">.</span><span class="n">initializers</span><span class="o">.</span><span class="n">TrainableHeNormal</span><span class="p">(</span>
+            <span class="n">stddev_initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">initializers</span><span class="o">.</span><span class="n">TruncatedNormal</span><span class="p">(</span>
+                <span class="n">mean</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">expm1</span><span class="p">(</span><span class="n">stddev_mean_init</span><span class="p">)),</span> <span class="n">stddev</span><span class="o">=</span><span class="n">stddev_stddev_init</span>
+            <span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">kernel_regularizer</span><span class="o">=</span><span class="n">kernel_regularizer_conv1</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;conv1&#39;</span><span class="p">,</span>
+    <span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">BatchNormalization</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;bn_conv1&#39;</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Activation</span><span class="p">(</span><span class="s1">&#39;relu&#39;</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">MaxPooling2D</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">strides</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">,</span>
+        <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">256</span><span class="p">],</span>
+        <span class="n">stage</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">num_blocks</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">strides</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">prior_stddev</span><span class="o">=</span><span class="n">prior_stddev</span><span class="p">,</span>
+        <span class="n">dataset_size</span><span class="o">=</span><span class="n">dataset_size</span><span class="p">,</span>
+        <span class="n">stddev_mean_init</span><span class="o">=</span><span class="n">stddev_mean_init</span><span class="p">,</span>
+        <span class="n">stddev_stddev_init</span><span class="o">=</span><span class="n">stddev_stddev_init</span><span class="p">,</span>
+        <span class="n">tied_mean_prior</span><span class="o">=</span><span class="n">tied_mean_prior</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">,</span>
+        <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span>
+        <span class="n">stage</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">num_blocks</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="n">strides</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">prior_stddev</span><span class="o">=</span><span class="n">prior_stddev</span><span class="p">,</span>
+        <span class="n">dataset_size</span><span class="o">=</span><span class="n">dataset_size</span><span class="p">,</span>
+        <span class="n">stddev_mean_init</span><span class="o">=</span><span class="n">stddev_mean_init</span><span class="p">,</span>
+        <span class="n">stddev_stddev_init</span><span class="o">=</span><span class="n">stddev_stddev_init</span><span class="p">,</span>
+        <span class="n">tied_mean_prior</span><span class="o">=</span><span class="n">tied_mean_prior</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">,</span>
+        <span class="p">[</span><span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">1024</span><span class="p">],</span>
+        <span class="n">stage</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="n">num_blocks</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+        <span class="n">strides</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">prior_stddev</span><span class="o">=</span><span class="n">prior_stddev</span><span class="p">,</span>
+        <span class="n">dataset_size</span><span class="o">=</span><span class="n">dataset_size</span><span class="p">,</span>
+        <span class="n">stddev_mean_init</span><span class="o">=</span><span class="n">stddev_mean_init</span><span class="p">,</span>
+        <span class="n">stddev_stddev_init</span><span class="o">=</span><span class="n">stddev_stddev_init</span><span class="p">,</span>
+        <span class="n">tied_mean_prior</span><span class="o">=</span><span class="n">tied_mean_prior</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">,</span>
+        <span class="p">[</span><span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">2048</span><span class="p">],</span>
+        <span class="n">stage</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+        <span class="n">num_blocks</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">strides</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">prior_stddev</span><span class="o">=</span><span class="n">prior_stddev</span><span class="p">,</span>
+        <span class="n">dataset_size</span><span class="o">=</span><span class="n">dataset_size</span><span class="p">,</span>
+        <span class="n">stddev_mean_init</span><span class="o">=</span><span class="n">stddev_mean_init</span><span class="p">,</span>
+        <span class="n">stddev_stddev_init</span><span class="o">=</span><span class="n">stddev_stddev_init</span><span class="p">,</span>
+        <span class="n">tied_mean_prior</span><span class="o">=</span><span class="n">tied_mean_prior</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">omit_last_layer</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;resnet50_variational&#39;</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">GlobalAveragePooling2D</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;avg_pool&#39;</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">kernel_regularizer_fc1000</span> <span class="o">=</span> <span class="n">init_kernel_regularizer</span><span class="p">(</span>
+        <span class="n">kernel_regularizer_class</span><span class="p">,</span> <span class="n">dataset_size</span><span class="p">,</span> <span class="n">prior_stddev</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">n_outputs</span><span class="o">=</span><span class="n">num_classes</span>
+    <span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">ed</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">DenseFlipout</span><span class="p">(</span>
+        <span class="n">num_classes</span><span class="p">,</span>
+        <span class="n">activation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">kernel_initializer</span><span class="o">=</span><span class="n">ed</span><span class="o">.</span><span class="n">initializers</span><span class="o">.</span><span class="n">TrainableHeNormal</span><span class="p">(</span>
+            <span class="n">stddev_initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">initializers</span><span class="o">.</span><span class="n">TruncatedNormal</span><span class="p">(</span>
+                <span class="n">mean</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">expm1</span><span class="p">(</span><span class="n">stddev_mean_init</span><span class="p">)),</span> <span class="n">stddev</span><span class="o">=</span><span class="n">stddev_stddev_init</span>
+            <span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">kernel_regularizer</span><span class="o">=</span><span class="n">kernel_regularizer_fc1000</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;fc1000&#39;</span><span class="p">,</span>
+    <span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;resnet50_variational&#39;</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 - 2022, Continental Heat AI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

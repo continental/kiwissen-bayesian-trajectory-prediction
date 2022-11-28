@@ -1,0 +1,13 @@
+bayes\_covernet.tf.metrics.MappedSparseCategoricalAccuracy
+==========================================================
+
+.. currentmodule:: bayes_covernet.tf.metrics
+
+.. autoclass:: MappedSparseCategoricalAccuracy
+   :members:
+   :show-inheritance:
+   :private-members:
+   :undoc-members:
+   :inherited-members:
+   
+   .. autoclasstoc::

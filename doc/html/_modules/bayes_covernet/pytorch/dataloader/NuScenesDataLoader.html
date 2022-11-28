@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bayes_covernet.pytorch.dataloader.NuScenesDataLoader &mdash; Bayesian Continual Learning  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/my_theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/autoclasstoc.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> Bayesian Continual Learning
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../readme.html">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../licenses.html">Licenses</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Bayesian Continual Learning</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>bayes_covernet.pytorch.dataloader.NuScenesDataLoader</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bayes_covernet.pytorch.dataloader.NuScenesDataLoader</h1><div class="highlight"><pre>
+<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Copyright (c) 2021-2022 Continental AG.</span>
+
+<span class="sd">@author: Christian Wirth &lt;christian.2.wirth@continental-corporation.com&gt;</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span> <span class="nn">gin</span>
+<span class="kn">from</span> <span class="nn">nuscenes</span> <span class="kn">import</span> <span class="n">NuScenes</span>
+<span class="kn">from</span> <span class="nn">nuscenes.eval.prediction.splits</span> <span class="kn">import</span> <span class="n">get_prediction_challenge_split</span>
+<span class="kn">from</span> <span class="nn">nuscenes.prediction</span> <span class="kn">import</span> <span class="n">PredictHelper</span>
+<span class="kn">from</span> <span class="nn">nuscenes.prediction.input_representation.agents</span> <span class="kn">import</span> <span class="n">AgentBoxesWithFadedHistory</span>
+<span class="kn">from</span> <span class="nn">nuscenes.prediction.input_representation.combinators</span> <span class="kn">import</span> <span class="n">Rasterizer</span>
+<span class="kn">from</span> <span class="nn">nuscenes.prediction.input_representation.interface</span> <span class="kn">import</span> <span class="n">InputRepresentation</span>
+<span class="kn">from</span> <span class="nn">nuscenes.prediction.input_representation.static_layers</span> <span class="kn">import</span> <span class="n">StaticLayerRasterizer</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Dataset</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="NuscenesDataset"><a class="viewcode-back" href="../../../../generated/bayes_covernet.pytorch.dataloader.NuScenesDataLoader.NuscenesDataset.html#bayes_covernet.pytorch.dataloader.NuScenesDataLoader.NuscenesDataset">[docs]</a><span class="nd">@gin</span><span class="o">.</span><span class="n">configurable</span>
+<span class="k">class</span> <span class="nc">NuscenesDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">split</span><span class="p">,</span>
+        <span class="n">data_dir</span><span class="o">=</span><span class="s1">&#39;D:/nuScenes_mini&#39;</span><span class="p">,</span>
+        <span class="n">cache_dir</span><span class="o">=</span><span class="s1">&#39;cache&#39;</span><span class="p">,</span>
+        <span class="n">data_version</span><span class="o">=</span><span class="s1">&#39;v1.0-mini&#39;</span><span class="p">,</span>
+        <span class="n">limit</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span> <span class="o">=</span> <span class="n">data_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_version</span> <span class="o">=</span> <span class="n">data_version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mtp_input_representation</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">split</span> <span class="o">=</span> <span class="n">split</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">token_pairs</span> <span class="o">=</span> <span class="n">get_prediction_challenge_split</span><span class="p">(</span><span class="n">split</span><span class="p">,</span> <span class="n">dataroot</span><span class="o">=</span><span class="n">data_dir</span><span class="p">)[</span>
+            <span class="p">:</span><span class="n">limit</span>
+        <span class="p">]</span>
+
+        <span class="n">agent_rasterizer</span> <span class="o">=</span> <span class="n">AgentBoxesWithFadedHistory</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">seconds_of_history</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_size</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">int</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">agent_rasterizer</span><span class="o">.</span><span class="n">meters_left</span> <span class="o">+</span> <span class="n">agent_rasterizer</span><span class="o">.</span><span class="n">meters_right</span><span class="p">)</span>
+                <span class="o">/</span> <span class="n">agent_rasterizer</span><span class="o">.</span><span class="n">resolution</span>
+            <span class="p">),</span>
+            <span class="nb">int</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">agent_rasterizer</span><span class="o">.</span><span class="n">meters_left</span> <span class="o">+</span> <span class="n">agent_rasterizer</span><span class="o">.</span><span class="n">meters_right</span><span class="p">)</span>
+                <span class="o">/</span> <span class="n">agent_rasterizer</span><span class="o">.</span><span class="n">resolution</span>
+            <span class="p">),</span>
+            <span class="mi">3</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">image_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">image_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_future_sec</span> <span class="o">=</span> <span class="mi">6</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">helper</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span><span class="p">:</span>
+            <span class="n">nuscenes</span> <span class="o">=</span> <span class="n">NuScenes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_version</span><span class="p">,</span> <span class="n">dataroot</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_helper</span> <span class="o">=</span> <span class="n">PredictHelper</span><span class="p">(</span><span class="n">nuscenes</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">mtp_input_representation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mtp_input_representation</span><span class="p">:</span>
+            <span class="n">static_layer_rasterizer</span> <span class="o">=</span> <span class="n">StaticLayerRasterizer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="p">)</span>
+            <span class="n">agent_rasterizer</span> <span class="o">=</span> <span class="n">AgentBoxesWithFadedHistory</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="p">,</span> <span class="n">seconds_of_history</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mtp_input_representation</span> <span class="o">=</span> <span class="n">InputRepresentation</span><span class="p">(</span>
+                <span class="n">static_layer_rasterizer</span><span class="p">,</span> <span class="n">agent_rasterizer</span><span class="p">,</span> <span class="n">Rasterizer</span><span class="p">()</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mtp_input_representation</span>
+
+<div class="viewcode-block" id="NuscenesDataset.__len__"><a class="viewcode-back" href="../../../../generated/bayes_covernet.pytorch.dataloader.NuScenesDataLoader.NuscenesDataset.html#bayes_covernet.pytorch.dataloader.NuScenesDataLoader.NuscenesDataset.__len__">[docs]</a>    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token_pairs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NuscenesDataset.__getitem__"><a class="viewcode-back" href="../../../../generated/bayes_covernet.pytorch.dataloader.NuScenesDataLoader.NuscenesDataset.html#bayes_covernet.pytorch.dataloader.NuScenesDataLoader.NuscenesDataset.__getitem__">[docs]</a>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+
+        <span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">token_pairs</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">instance_token</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">sample_token</span><span class="si">}</span><span class="s1">.mem&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtp_input_representation</span><span class="o">.</span><span class="n">make_input_representation</span><span class="p">(</span>
+                <span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+            <span class="n">fmem</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">instance_token</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">sample_token</span><span class="si">}</span><span class="s1">.mem&#39;</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">,</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w+&#39;</span><span class="p">,</span>
+                <span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">image_size</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">fmem</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">image</span><span class="p">[:]</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">instance_token</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">sample_token</span><span class="si">}</span><span class="s1">.mem&#39;</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span>
+            <span class="n">shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">image_size</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+        <span class="n">image_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">image</span><span class="p">)</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">instance_token</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">sample_token</span><span class="si">}</span><span class="s1">_state.mem&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">state_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">get_velocity_for_agent</span><span class="p">(</span><span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">get_acceleration_for_agent</span><span class="p">(</span>
+                        <span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span>
+                    <span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">get_heading_change_rate_for_agent</span><span class="p">(</span>
+                        <span class="n">instance_token</span><span class="p">,</span> <span class="n">sample_token</span>
+                    <span class="p">),</span>
+                <span class="p">]</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+
+            <span class="n">fmem</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">instance_token</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">sample_token</span><span class="si">}</span><span class="s1">_state.mem&#39;</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w+&#39;</span><span class="p">,</span>
+                <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">fmem</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">state_vector</span><span class="p">[:]</span>
+        <span class="n">state_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">instance_token</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">sample_token</span><span class="si">}</span><span class="s1">_state.mem&#39;</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span>
+            <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">agent_state_vector</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">state_vector</span><span class="p">)</span>
+        <span class="n">agent_state_vector</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">agent_state_vector</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">instance_token</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">sample_token</span><span class="si">}</span><span class="s1">_gt.mem&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">future_for_agent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">get_future_for_agent</span><span class="p">(</span>
+                    <span class="n">instance_token</span><span class="p">,</span>
+                    <span class="n">sample_token</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">num_future_sec</span><span class="p">,</span>
+                    <span class="n">in_agent_frame</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">just_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="mi">0</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="n">fmem</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">instance_token</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">sample_token</span><span class="si">}</span><span class="s1">_gt.mem&#39;</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w+&#39;</span><span class="p">,</span>
+                <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_future_sec</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">fmem</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">future_for_agent</span><span class="p">[:]</span>
+        <span class="n">future_for_agent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">instance_token</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">sample_token</span><span class="si">}</span><span class="s1">_gt.mem&#39;</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span>
+            <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_future_sec</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">future_for_agent</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">future_for_agent</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">image_tensor</span><span class="p">,</span>
+            <span class="n">agent_state_vector</span><span class="p">,</span>
+            <span class="n">future_for_agent</span><span class="p">,</span>
+            <span class="n">instance_token</span><span class="p">,</span>
+            <span class="n">sample_token</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="NuscenesDataset.get_dataset"><a class="viewcode-back" href="../../../../generated/bayes_covernet.pytorch.dataloader.NuScenesDataLoader.NuscenesDataset.html#bayes_covernet.pytorch.dataloader.NuScenesDataLoader.NuscenesDataset.get_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">get_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 - 2022, Continental Heat AI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

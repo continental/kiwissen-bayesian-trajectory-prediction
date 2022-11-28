@@ -1,0 +1,6 @@
+bayes\_covernet.tf.model.covernet\_utils.mean\_pointwise\_l2\_distance
+======================================================================
+
+.. currentmodule:: bayes_covernet.tf.model.covernet_utils
+
+.. autofunction:: mean_pointwise_l2_distance

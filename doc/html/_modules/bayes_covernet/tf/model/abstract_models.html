@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bayes_covernet.tf.model.abstract_models &mdash; Bayesian Continual Learning  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/my_theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/autoclasstoc.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../../about.html" />
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> Bayesian Continual Learning
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../readme.html">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../about.html">Code Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../licenses.html">Licenses</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Bayesian Continual Learning</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>bayes_covernet.tf.model.abstract_models</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bayes_covernet.tf.model.abstract_models</h1><div class="highlight"><pre>
+<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Abstract base class and mixins</span>
+
+<span class="sd">Copyright (c) 2021-2022 Continental AG.</span>
+
+<span class="sd">@author: Christian Wirth &lt;christian.2.wirth@continental-corporation.com&gt;</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partialmethod</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">edward2.tensorflow.layers.normalization</span> <span class="kn">import</span> <span class="n">SpectralNormalization</span>
+<span class="kn">from</span> <span class="nn">tensorflow.keras</span> <span class="kn">import</span> <span class="n">layers</span><span class="p">,</span> <span class="n">Model</span>
+<span class="kn">from</span> <span class="nn">tensorflow.keras.optimizers</span> <span class="kn">import</span> <span class="n">SGD</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span> <span class="nn">uncertainty_baselines.models.resnet50_sngp</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">make_random_feature_initializer</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">uncertainty_baselines.models.variational_utils</span> <span class="kn">import</span> <span class="n">init_kernel_regularizer</span>
+
+<span class="kn">from</span> <span class="nn">bayes_covernet.tf.util</span> <span class="kn">import</span> <span class="n">MultivariateNormalDiag</span>
+<span class="kn">from</span> <span class="nn">bayes_covernet.tf.model.variational</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">NormalRenyiDivergenceWithTiedMean</span><span class="p">,</span>
+    <span class="n">NormalRenyiDivergence</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">bayes_covernet.tf.model.variational</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">train_step_annealed</span><span class="p">,</span>
+    <span class="n">test_step_repeated</span><span class="p">,</span>
+    <span class="n">predict_step_repeated</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">import</span> <span class="nn">edward2</span> <span class="k">as</span> <span class="nn">ed2</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">import</span> <span class="nn">tensorflow_probability</span> <span class="k">as</span> <span class="nn">tfp</span>
+
+<span class="kn">from</span> <span class="nn">tensorflow_probability.python.distributions</span> <span class="kn">import</span> <span class="n">kullback_leibler</span><span class="p">,</span> <span class="n">Normal</span>
+<span class="kn">from</span> <span class="nn">tensorflow_probability.python.distributions.kullback_leibler</span> <span class="kn">import</span> <span class="n">_DIVERGENCES</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+
+
+<div class="viewcode-block" id="ModelFactory"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.ModelFactory.html#bayes_covernet.tf.model.abstract_models.ModelFactory">[docs]</a><span class="k">class</span> <span class="nc">ModelFactory</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Model factory for any predictor</span>
+
+<span class="sd">    :param int dataset_size: Number of examples in the dataset</span>
+<span class="sd">    :param dict **kwargs: Hyperparameters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset_size</span> <span class="o">=</span> <span class="n">dataset_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span> <span class="o">=</span> <span class="n">kwargs</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;trainer&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="ModelFactory.create_model"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.ModelFactory.html#bayes_covernet.tf.model.abstract_models.ModelFactory.create_model">[docs]</a>    <span class="k">def</span> <span class="nf">create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Instanciates the keras model</span>
+
+<span class="sd">        :param list inputs: list of input layers</span>
+<span class="sd">        :param list outputs: list of output layers</span>
+<span class="sd">        :param optimizer: tensorflow optimizer</span>
+<span class="sd">        :return: the model</span>
+<span class="sd">        :rtype: Model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="n">layers</span><span class="o">.</span><span class="n">Activation</span><span class="p">(</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)(</span><span class="n">v</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">outputs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">model</span></div>
+
+<div class="viewcode-block" id="ModelFactory.get_loss"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.ModelFactory.html#bayes_covernet.tf.model.abstract_models.ModelFactory.get_loss">[docs]</a>    <span class="k">def</span> <span class="nf">get_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Must return a loss function</span>
+
+<span class="sd">        :return: Loss function</span>
+<span class="sd">        :rtype: Callable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="ModelFactory.get_mapper"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.ModelFactory.html#bayes_covernet.tf.model.abstract_models.ModelFactory.get_mapper">[docs]</a>    <span class="k">def</span> <span class="nf">get_mapper</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Has to return functions mapping y_true, y_pred into coordinate (trajectory) space and categorical space.</span>
+
+<span class="sd">        :return: mapper to categorical, mappter to multi-categorical, mapper to trajectory</span>
+<span class="sd">        :rtype: Callable, Callable, Callable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="ModelFactory.get_backbone"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.ModelFactory.html#bayes_covernet.tf.model.abstract_models.ModelFactory.get_backbone">[docs]</a>    <span class="k">def</span> <span class="nf">get_backbone</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Must build the feature projector backbone</span>
+
+<span class="sd">        :param tuple shape: Input shape</span>
+<span class="sd">        :return: inputs, output</span>
+<span class="sd">        :rtype: list[tf.Tensor], tf.Tensor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="ModelFactory.get_hidden"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.ModelFactory.html#bayes_covernet.tf.model.abstract_models.ModelFactory.get_hidden">[docs]</a>    <span class="k">def</span> <span class="nf">get_hidden</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logits</span><span class="p">,</span> <span class="n">hidden_layer_size</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Builds a single, hidden layer</span>
+
+<span class="sd">        :param tf.Tensor logits: Output from the last layer</span>
+<span class="sd">        :param int hidden_layer_size: Number of hidden units</span>
+<span class="sd">        :return: layer output</span>
+<span class="sd">        :rtype: tf.Tensor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="ModelFactory.get_head"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.ModelFactory.html#bayes_covernet.tf.model.abstract_models.ModelFactory.get_head">[docs]</a>    <span class="k">def</span> <span class="nf">get_head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logits</span><span class="p">,</span> <span class="n">num_modes</span><span class="p">,</span> <span class="n">is_classifier</span><span class="p">,</span> <span class="n">is_multilabel</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Builds a prediction output layer</span>
+
+<span class="sd">        :param tf.Tensor logits: Output from the last layer</span>
+<span class="sd">        :param int num_modes: Number of output values</span>
+<span class="sd">        :param bool is_classifier: True if classifier, False for regressor</span>
+<span class="sd">        :param bool is_multilabel: True for multilabel classification, False for single class prediction</span>
+<span class="sd">        :return: layer output</span>
+<span class="sd">        :rtype: tf.Tensor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="ModelFactory.build"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.ModelFactory.html#bayes_covernet.tf.model.abstract_models.ModelFactory.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Builds the model itself</span>
+
+<span class="sd">        :return: model, loss, optimizer, scheduler, prediction to trajectory mapper, groundtruth to class mapper, groundtruth to label mapper</span>
+<span class="sd">        :rtype: Model, func, Optimizer, Schedule, func, func, func</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">inputs</span><span class="p">,</span> <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_backbone</span><span class="p">((</span><span class="mi">480</span><span class="p">,</span> <span class="mi">480</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">hidden_layer_size</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">4096</span><span class="p">]:</span>
+            <span class="n">logits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_hidden</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">hidden_layer_size</span><span class="p">)</span>
+
+        <span class="n">y_pred</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">key</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_head</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">is_classifier</span><span class="p">,</span> <span class="n">is_multilabel</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="p">(</span><span class="n">is_classifier</span><span class="p">,</span> <span class="n">is_multilabel</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">heads</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">SGD</span><span class="p">(</span>
+            <span class="n">learning_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s2">&quot;lr&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="p">,</span>
+            <span class="n">momentum</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;momentum&#39;</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">mixed_precision</span><span class="o">.</span><span class="n">LossScaleOptimizer</span><span class="p">(</span><span class="n">optimizer</span><span class="p">)</span>
+
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_model</span><span class="p">(</span>
+            <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
+            <span class="n">outputs</span><span class="o">=</span><span class="n">y_pred</span><span class="p">,</span>
+            <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_loss</span><span class="p">()</span>
+
+        <span class="n">class_mapper</span><span class="p">,</span> <span class="n">label_mapper</span><span class="p">,</span> <span class="n">traj_mapper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_mapper</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">traj_mapper</span><span class="p">,</span> <span class="n">class_mapper</span><span class="p">,</span> <span class="n">label_mapper</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="DetMixin"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.DetMixin.html#bayes_covernet.tf.model.abstract_models.DetMixin">[docs]</a><span class="k">class</span> <span class="nc">DetMixin</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Mixin for deterministic models</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DetMixin.get_hidden"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.DetMixin.html#bayes_covernet.tf.model.abstract_models.DetMixin.get_hidden">[docs]</a>    <span class="k">def</span> <span class="nf">get_hidden</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logits</span><span class="p">,</span> <span class="n">hidden_layer_size</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">hidden_layer_size</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">,</span> <span class="n">use_bias</span><span class="o">=</span><span class="kc">False</span><span class="p">)(</span>
+            <span class="n">logits</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="DetMixin.get_head"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.DetMixin.html#bayes_covernet.tf.model.abstract_models.DetMixin.get_head">[docs]</a>    <span class="k">def</span> <span class="nf">get_head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logits</span><span class="p">,</span> <span class="n">num_modes</span><span class="p">,</span> <span class="n">is_classifier</span><span class="p">,</span> <span class="n">is_multilabel</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">num_modes</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">):</span>
+            <span class="n">logits</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">num_modes</span><span class="p">),</span> <span class="n">use_bias</span><span class="o">=</span><span class="kc">False</span><span class="p">)(</span><span class="n">logits</span><span class="p">)</span>
+            <span class="n">logits</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">Reshape</span><span class="p">(</span><span class="n">num_modes</span><span class="p">)(</span><span class="n">logits</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logits</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">num_modes</span><span class="p">,</span> <span class="n">use_bias</span><span class="o">=</span><span class="kc">False</span><span class="p">)(</span><span class="n">logits</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">is_classifier</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">is_multilabel</span><span class="p">:</span>
+                <span class="n">y_pred</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">logits</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">y_pred</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">logits</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">y_pred</span> <span class="o">=</span> <span class="n">logits</span>
+
+        <span class="k">return</span> <span class="n">y_pred</span></div></div>
+
+
+<div class="viewcode-block" id="DetMVNMixin"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.DetMVNMixin.html#bayes_covernet.tf.model.abstract_models.DetMVNMixin">[docs]</a><span class="k">class</span> <span class="nc">DetMVNMixin</span><span class="p">(</span><span class="n">DetMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Mixin for deterministic multivariate normal regression outputs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DetMVNMixin.get_head"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.DetMVNMixin.html#bayes_covernet.tf.model.abstract_models.DetMVNMixin.get_head">[docs]</a>    <span class="k">def</span> <span class="nf">get_head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logits</span><span class="p">,</span> <span class="n">num_modes</span><span class="p">,</span> <span class="n">is_classifier</span><span class="p">,</span> <span class="n">is_multilabel</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_classifier</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_approx</span> <span class="o">!=</span> <span class="s2">&quot;fixed&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov_approx</span> <span class="o">==</span> <span class="s2">&quot;diag&quot;</span><span class="p">:</span>
+                <span class="n">logits</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_head</span><span class="p">(</span>
+                    <span class="n">logits</span><span class="o">=</span><span class="n">logits</span><span class="p">,</span>
+                    <span class="n">num_modes</span><span class="o">=</span><span class="n">MultivariateNormalDiag</span><span class="o">.</span><span class="n">params_size</span><span class="p">(</span><span class="n">num_modes</span><span class="p">),</span>
+                    <span class="n">is_classifier</span><span class="o">=</span><span class="n">is_classifier</span><span class="p">,</span>
+                    <span class="n">is_multilabel</span><span class="o">=</span><span class="n">is_multilabel</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">dist_layer</span> <span class="o">=</span> <span class="n">MultivariateNormalDiag</span><span class="p">(</span>
+                    <span class="n">num_modes</span><span class="p">,</span>
+                    <span class="n">convert_to_tensor_fn</span><span class="o">=</span><span class="n">tfp</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">Distribution</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;reg&quot;</span><span class="p">,</span>
+                <span class="p">)(</span><span class="n">logits</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="k">return</span> <span class="n">dist_layer</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logits</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_head</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">num_modes</span><span class="p">,</span> <span class="n">is_classifier</span><span class="p">,</span> <span class="n">is_multilabel</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">logits</span></div></div>
+
+
+<div class="viewcode-block" id="SNGPMixin"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.SNGPMixin.html#bayes_covernet.tf.model.abstract_models.SNGPMixin">[docs]</a><span class="k">class</span> <span class="nc">SNGPMixin</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Mixin for Spectral Normalized Gaussian Process outputs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SNGPMixin.get_hidden"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.SNGPMixin.html#bayes_covernet.tf.model.abstract_models.SNGPMixin.get_hidden">[docs]</a>    <span class="k">def</span> <span class="nf">get_hidden</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logits</span><span class="p">,</span> <span class="n">hidden_layer_size</span><span class="p">):</span>
+        <span class="n">logits</span> <span class="o">=</span> <span class="n">SpectralNormalization</span><span class="p">(</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">hidden_layer_size</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">,</span> <span class="n">use_bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+            <span class="n">norm_multiplier</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s2">&quot;spectral_norm&quot;</span><span class="p">],</span>
+        <span class="p">)(</span><span class="n">logits</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">logits</span></div>
+
+<div class="viewcode-block" id="SNGPMixin.get_head"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.SNGPMixin.html#bayes_covernet.tf.model.abstract_models.SNGPMixin.get_head">[docs]</a>    <span class="k">def</span> <span class="nf">get_head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logits</span><span class="p">,</span> <span class="n">num_modes</span><span class="p">,</span> <span class="n">is_classifier</span><span class="p">,</span> <span class="n">is_multilabel</span><span class="p">):</span>
+        <span class="n">gp_output_imagenet_initializer</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="n">gp_output_initializer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">gp_output_imagenet_initializer</span><span class="p">:</span>
+            <span class="c1"># Use the same initializer as dense</span>
+            <span class="n">gp_output_initializer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">initializers</span><span class="o">.</span><span class="n">RandomNormal</span><span class="p">(</span><span class="n">stddev</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sngp</span> <span class="o">=</span> <span class="n">ed2</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">RandomFeatureGaussianProcess</span><span class="p">(</span>
+            <span class="n">units</span><span class="o">=</span><span class="n">num_modes</span><span class="p">,</span>
+            <span class="n">num_inducing</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s2">&quot;num_inducing&quot;</span><span class="p">],</span>
+            <span class="n">gp_kernel_scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s2">&quot;gp_kernel_scale&quot;</span><span class="p">],</span>
+            <span class="n">gp_output_bias</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+            <span class="n">normalize_input</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">gp_cov_momentum</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">gp_cov_ridge_penalty</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">scale_random_features</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">use_custom_random_features</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">custom_random_features_initializer</span><span class="o">=</span><span class="n">make_random_feature_initializer</span><span class="p">(</span><span class="s1">&#39;orf&#39;</span><span class="p">),</span>
+            <span class="n">kernel_initializer</span><span class="o">=</span><span class="n">gp_output_initializer</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">logits</span><span class="p">,</span> <span class="n">cov</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sngp</span><span class="p">(</span><span class="n">logits</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">is_classifier</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">is_multilabel</span><span class="p">:</span>
+                <span class="n">y_pred</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">logits</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">y_pred</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">logits</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">y_pred</span> <span class="o">=</span> <span class="n">logits</span>
+
+        <span class="k">return</span> <span class="n">y_pred</span></div>
+
+<div class="viewcode-block" id="SNGPMixin.create_model"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.SNGPMixin.html#bayes_covernet.tf.model.abstract_models.SNGPMixin.create_model">[docs]</a>    <span class="k">def</span> <span class="nf">create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">):</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">Activation</span><span class="p">(</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)(</span><span class="n">outputs</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">sngp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sngp</span>
+        <span class="k">return</span> <span class="n">model</span></div></div>
+
+
+<div class="viewcode-block" id="VIMixin"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.VIMixin.html#bayes_covernet.tf.model.abstract_models.VIMixin">[docs]</a><span class="k">class</span> <span class="nc">VIMixin</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Mixin for variational inference models. Also enables GVCL if a prior_model is given.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;posterior_temp&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;posterior_temp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="mf">1.0</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;batch_size&#39;</span><span class="p">]</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">effective_dataset_size</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dataset_size</span>
+            <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;batch_size&#39;</span><span class="p">]</span>
+            <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;posterior_temp&#39;</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;use_renyi&#39;</span><span class="p">]:</span>
+            <span class="n">ed2</span><span class="o">.</span><span class="n">regularizers</span><span class="o">.</span><span class="n">NormalKLDivergenceWithTiedMean</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">NormalRenyiDivergenceWithTiedMean</span>
+            <span class="p">)</span>
+            <span class="n">ed2</span><span class="o">.</span><span class="n">regularizers</span><span class="o">.</span><span class="n">NormalKLDivergence</span> <span class="o">=</span> <span class="n">NormalRenyiDivergence</span>
+
+        <span class="n">Model</span><span class="o">.</span><span class="n">test_step</span> <span class="o">=</span> <span class="n">partialmethod</span><span class="p">(</span><span class="n">test_step_repeated</span><span class="p">,</span> <span class="n">num_repeats</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+        <span class="n">Model</span><span class="o">.</span><span class="n">predict_step</span> <span class="o">=</span> <span class="n">partialmethod</span><span class="p">(</span><span class="n">predict_step_repeated</span><span class="p">,</span> <span class="n">num_repeats</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+        <span class="n">Model</span><span class="o">.</span><span class="n">train_step</span> <span class="o">=</span> <span class="n">partialmethod</span><span class="p">(</span>
+            <span class="n">train_step_annealed</span><span class="p">,</span>
+            <span class="n">num_repeats</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;train_mc_samples&#39;</span><span class="p">],</span>
+            <span class="n">freeze_mean</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;freeze_mean&#39;</span><span class="p">],</span>
+            <span class="n">clip_norm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;clip_norm&#39;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="VIMixin.get_hidden"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.VIMixin.html#bayes_covernet.tf.model.abstract_models.VIMixin.get_hidden">[docs]</a>    <span class="k">def</span> <span class="nf">get_hidden</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logits</span><span class="p">,</span> <span class="n">hidden_layer_size</span><span class="p">):</span>
+        <span class="n">kernel_regularizer</span> <span class="o">=</span> <span class="n">init_kernel_regularizer</span><span class="p">(</span>
+            <span class="n">ed2</span><span class="o">.</span><span class="n">regularizers</span><span class="o">.</span><span class="n">NormalKLDivergenceWithTiedMean</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;tied_mean&#39;</span><span class="p">]</span>
+            <span class="k">else</span> <span class="n">ed2</span><span class="o">.</span><span class="n">regularizers</span><span class="o">.</span><span class="n">NormalKLDivergence</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">effective_dataset_size</span><span class="p">,</span>
+            <span class="n">prior_stddev</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;prior_stddev&#39;</span><span class="p">],</span>
+            <span class="n">inputs</span><span class="o">=</span><span class="n">logits</span><span class="p">,</span>
+            <span class="n">n_outputs</span><span class="o">=</span><span class="n">hidden_layer_size</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">logits</span> <span class="o">=</span> <span class="n">ed2</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">DenseFlipout</span><span class="p">(</span>
+            <span class="n">hidden_layer_size</span><span class="p">,</span>
+            <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">,</span>
+            <span class="n">kernel_initializer</span><span class="o">=</span><span class="n">ed2</span><span class="o">.</span><span class="n">initializers</span><span class="o">.</span><span class="n">TrainableHeNormal</span><span class="p">(</span>
+                <span class="n">stddev_initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">initializers</span><span class="o">.</span><span class="n">TruncatedNormal</span><span class="p">(</span>
+                    <span class="n">mean</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">expm1</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;stddev_mean_init&#39;</span><span class="p">])),</span>
+                    <span class="n">stddev</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">kernel_regularizer</span><span class="o">=</span><span class="n">kernel_regularizer</span><span class="p">,</span>
+            <span class="n">use_bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)(</span><span class="n">logits</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">logits</span></div>
+
+<div class="viewcode-block" id="VIMixin.get_head"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.VIMixin.html#bayes_covernet.tf.model.abstract_models.VIMixin.get_head">[docs]</a>    <span class="k">def</span> <span class="nf">get_head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logits</span><span class="p">,</span> <span class="n">num_modes</span><span class="p">,</span> <span class="n">is_classifier</span><span class="p">,</span> <span class="n">is_multilabel</span><span class="p">):</span>
+        <span class="n">kernel_regularizer</span> <span class="o">=</span> <span class="n">init_kernel_regularizer</span><span class="p">(</span>
+            <span class="n">ed2</span><span class="o">.</span><span class="n">regularizers</span><span class="o">.</span><span class="n">NormalKLDivergenceWithTiedMean</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;tied_mean&#39;</span><span class="p">]</span>
+            <span class="k">else</span> <span class="n">ed2</span><span class="o">.</span><span class="n">regularizers</span><span class="o">.</span><span class="n">NormalKLDivergence</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">effective_dataset_size</span><span class="p">,</span>
+            <span class="n">prior_stddev</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;prior_stddev&#39;</span><span class="p">],</span>
+            <span class="n">inputs</span><span class="o">=</span><span class="n">logits</span><span class="p">,</span>
+            <span class="n">n_outputs</span><span class="o">=</span><span class="n">num_modes</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">logits</span> <span class="o">=</span> <span class="n">ed2</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">DenseFlipout</span><span class="p">(</span>
+            <span class="n">num_modes</span><span class="p">,</span>
+            <span class="n">activation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">kernel_initializer</span><span class="o">=</span><span class="n">ed2</span><span class="o">.</span><span class="n">initializers</span><span class="o">.</span><span class="n">TrainableHeNormal</span><span class="p">(</span>
+                <span class="n">stddev_initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">initializers</span><span class="o">.</span><span class="n">TruncatedNormal</span><span class="p">(</span>
+                    <span class="n">mean</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">expm1</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;stddev_mean_init&#39;</span><span class="p">])),</span>
+                    <span class="n">stddev</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">kernel_regularizer</span><span class="o">=</span><span class="n">kernel_regularizer</span><span class="p">,</span>
+            <span class="n">use_bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)(</span><span class="n">logits</span><span class="p">)</span>
+
+        <span class="n">logits</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">is_classifier</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">is_multilabel</span><span class="p">:</span>
+                <span class="n">y_pred</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">logits</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">y_pred</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">logits</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">y_pred</span> <span class="o">=</span> <span class="n">logits</span>
+
+        <span class="k">return</span> <span class="n">y_pred</span></div>
+
+<div class="viewcode-block" id="VIMixin.gcvl_init"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.VIMixin.html#bayes_covernet.tf.model.abstract_models.VIMixin.gcvl_init">[docs]</a>    <span class="k">def</span> <span class="nf">gcvl_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialized the prior and regularizer, as defined by GVCL.</span>
+
+<span class="sd">        :param Model model: Keras model</span>
+<span class="sd">        :return: Model with GVCL regularization</span>
+<span class="sd">        :rtype: Model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lamb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;gvcl_lambda&#39;</span><span class="p">]</span>
+        <span class="n">initial_prior_var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;prior_stddev&#39;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
+
+        <span class="k">def</span> <span class="nf">_kl_normal_normal</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            KL divergence with GVCL lambda variable</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">name_scope</span><span class="p">(</span><span class="n">name</span> <span class="ow">or</span> <span class="s1">&#39;kl_normal_normal&#39;</span><span class="p">):</span>
+                <span class="n">exp_var</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
+                <span class="n">prior_exp_var</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
+                <span class="n">trace_term</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">exp_var</span> <span class="o">-</span> <span class="n">prior_exp_var</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">lamb</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">mean_term</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">loc</span> <span class="o">-</span> <span class="n">b</span><span class="o">.</span><span class="n">loc</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span>
+                        <span class="n">lamb</span>
+                        <span class="o">*</span> <span class="n">tf</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span>
+                            <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">prior_exp_var</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">initial_prior_var</span><span class="p">),</span> <span class="mf">0.0</span>
+                        <span class="p">)</span>
+                        <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">initial_prior_var</span><span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">mean_term</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">loc</span> <span class="o">-</span> <span class="n">b</span><span class="o">.</span><span class="n">loc</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">prior_exp_var</span><span class="p">)</span>
+                <span class="n">det_term</span> <span class="o">=</span> <span class="n">prior_exp_var</span> <span class="o">-</span> <span class="n">exp_var</span>
+                <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">trace_term</span> <span class="o">+</span> <span class="n">mean_term</span> <span class="o">+</span> <span class="n">det_term</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">_DIVERGENCES</span><span class="p">[(</span><span class="n">Normal</span><span class="p">,</span> <span class="n">Normal</span><span class="p">)]</span> <span class="o">=</span> <span class="n">_kl_normal_normal</span>
+
+        <span class="n">collected_variables</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">):</span>
+            <span class="n">variables</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="nb">hasattr</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;kernel_regularizer&quot;</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="n">layer</span><span class="o">.</span><span class="n">kernel_regularizer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="p">):</span>
+                <span class="n">variables</span><span class="p">[</span><span class="s2">&quot;kernel/stddev&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">kernel_regularizer</span>
+                <span class="n">variables</span><span class="p">[</span>
+                    <span class="s2">&quot;kernel/stddev/constraint&quot;</span>
+                <span class="p">]</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">kernel_initializer</span><span class="o">.</span><span class="n">stddev_constraint</span>
+                <span class="n">variables</span><span class="p">[</span><span class="s2">&quot;kernel/mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">kernel_regularizer</span>
+                <span class="n">variables</span><span class="p">[</span>
+                    <span class="s2">&quot;kernel/mean/constraint&quot;</span>
+                <span class="p">]</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">kernel_initializer</span><span class="o">.</span><span class="n">mean_constraint</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="nb">hasattr</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;bias_regularizer&quot;</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="n">layer</span><span class="o">.</span><span class="n">bias_regularizer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="p">):</span>
+                <span class="n">variables</span><span class="p">[</span><span class="s2">&quot;bias/stddev&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">bias_regularizer</span>
+                <span class="n">variables</span><span class="p">[</span>
+                    <span class="s2">&quot;bias/stddev/constraint&quot;</span>
+                <span class="p">]</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">bias_initializer</span><span class="o">.</span><span class="n">stddev_constraint</span>
+                <span class="n">variables</span><span class="p">[</span><span class="s2">&quot;bias/mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">bias_regularizer</span>
+                <span class="n">variables</span><span class="p">[</span>
+                    <span class="s2">&quot;bias/mean/constraint&quot;</span>
+                <span class="p">]</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">bias_initializer</span><span class="o">.</span><span class="n">mean_constraint</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">trainable_variables</span> <span class="o">+</span> <span class="n">layer</span><span class="o">.</span><span class="n">non_trainable_variables</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">collected_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+        <span class="n">checkpoint_keys</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">shape</span> <span class="ow">in</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">list_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;prior_model&#39;</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="ow">not</span> <span class="s1">&#39;optimizer&#39;</span> <span class="ow">in</span> <span class="n">name</span>
+                <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                <span class="ow">and</span> <span class="p">(</span><span class="s2">&quot;kernel&quot;</span> <span class="ow">in</span> <span class="n">name</span> <span class="ow">or</span> <span class="s2">&quot;bias&quot;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">)</span>
+            <span class="p">):</span>
+                <span class="n">checkpoint_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="n">consumed</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">checkpoint_keys</span><span class="p">):</span>
+            <span class="n">elements</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+            <span class="n">regularizer</span> <span class="o">=</span> <span class="n">collected_variables</span><span class="p">[</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">elements</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;layer_with_weights-&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+            <span class="p">][</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">elements</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_initializer&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">elements</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">load_variable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;prior_model&#39;</span><span class="p">],</span> <span class="n">name</span><span class="p">)</span>
+            <span class="n">constraint</span> <span class="o">=</span> <span class="n">collected_variables</span><span class="p">[</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">elements</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;layer_with_weights-&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+            <span class="p">][</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">elements</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_initializer&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">elements</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">/constraint&quot;</span><span class="p">]</span>
+            <span class="n">consumed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">elements</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;layer_with_weights-&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)))</span>
+            <span class="k">if</span> <span class="n">constraint</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">constraint</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">elements</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;mean&#39;</span><span class="p">:</span>
+                <span class="n">regularizer</span><span class="o">.</span><span class="n">mean</span> <span class="o">=</span> <span class="n">data</span>
+            <span class="k">elif</span> <span class="n">elements</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;stddev&#39;</span><span class="p">:</span>
+                <span class="n">regularizer</span><span class="o">.</span><span class="n">stddev</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">consumed</span><span class="p">)),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="k">del</span> <span class="n">collected_variables</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">([</span><span class="n">k</span> <span class="o">==</span> <span class="p">{}</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">collected_variables</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">model</span></div>
+
+<div class="viewcode-block" id="VIMixin.create_model"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.abstract_models.VIMixin.html#bayes_covernet.tf.model.abstract_models.VIMixin.create_model">[docs]</a>    <span class="k">def</span> <span class="nf">create_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">):</span>
+        <span class="c1">#=======================================================================</span>
+        <span class="c1"># outputs = {</span>
+        <span class="c1">#     k: layers.Activation(&#39;linear&#39;, dtype=&#39;float32&#39;)(v)</span>
+        <span class="c1">#     for k, v in outputs.items()</span>
+        <span class="c1"># }</span>
+        <span class="c1">#=======================================================================</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="s1">&#39;prior_model&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;prior_model&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">False</span>
+        <span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Running in GVCL mode&quot;</span><span class="p">)</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gcvl_init</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+        <span class="n">num_batches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset_size</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;batch_size&#39;</span><span class="p">]</span>
+        <span class="n">annealing_iterations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;anneal_epochs&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">num_batches</span>
+        <span class="n">warmup_iterations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyperparameters</span><span class="p">[</span><span class="s1">&#39;warmup_epochs&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">num_batches</span>
+        <span class="k">if</span> <span class="n">annealing_iterations</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">warmup_iterations</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">loss_scaler</span> <span class="o">=</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span>
+                <span class="mf">0.0</span><span class="p">,</span>
+                <span class="n">tf</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span>
+                    <span class="mf">1.0</span><span class="p">,</span>
+                    <span class="p">(</span>
+                        <span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">optimizer</span><span class="o">.</span><span class="n">iterations</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">-</span> <span class="n">warmup_iterations</span><span class="p">)</span>
+                        <span class="o">/</span> <span class="n">tf</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">annealing_iterations</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+                    <span class="p">),</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">loss_scaler</span> <span class="o">=</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="mf">1.0</span>
+
+        <span class="c1"># =======================================================================</span>
+        <span class="c1"># filtered_variables = []</span>
+        <span class="c1"># for var in model.trainable_variables:</span>
+        <span class="c1">#     if &#39;batch_norm&#39; in var.name or &#39;bias&#39; in var.name:</span>
+        <span class="c1">#         filtered_variables.append(tf.reshape(var, (-1,)))</span>
+        <span class="c1"># model.add_loss(lambda: 1e-3 * tf.nn.l2_loss(tf.concat(filtered_variables, axis=0)))</span>
+        <span class="c1"># =======================================================================</span>
+        <span class="k">return</span> <span class="n">model</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 - 2022, Continental Heat AI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

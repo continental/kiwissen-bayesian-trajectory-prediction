@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bayes_covernet.tf.model.covernet_utils &mdash; Bayesian Continual Learning  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/my_theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/autoclasstoc.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../../about.html" />
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> Bayesian Continual Learning
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../readme.html">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../about.html">Code Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../licenses.html">Licenses</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Bayesian Continual Learning</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>bayes_covernet.tf.model.covernet_utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bayes_covernet.tf.model.covernet_utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Utility functions for CoverNet based predictors</span>
+
+<span class="sd">Copyright (c) 2021-2022 Continental AG.</span>
+
+<span class="sd">@author: Christian Wirth &lt;christian.2.wirth@continental-corporation.com&gt;</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+
+
+<div class="viewcode-block" id="covernet_to_trajs"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.covernet_utils.covernet_to_trajs.html#bayes_covernet.tf.model.covernet_utils.covernet_to_trajs">[docs]</a><span class="k">def</span> <span class="nf">covernet_to_trajs</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">lattice</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Maps the covernet output (class) to the trajectory represented by that class. Only applied to y_pred</span>
+
+<span class="sd">    :param tf.Tensor y_true: ground truth, not used</span>
+<span class="sd">    :param tf.Tensor y_pred: predictive class probabilities</span>
+<span class="sd">    :param tf.Tensor lattice: array of trajectories for each class with (CLASS,STEP,POS) format</span>
+<span class="sd">    :return: y_true, array with (CLASS,STEP,POS), ordered by the prediction probability</span>
+<span class="sd">    :rtype: tf.Tensor, tf.Tensor</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">best_n</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s1">&#39;DESCENDING&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">collected_trajs</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">repeats</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">best_n</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+        <span class="n">best_n</span><span class="p">,</span>
+        <span class="n">batch_dims</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">collected_trajs</span></div>
+
+
+<div class="viewcode-block" id="multipath_to_trajs"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.covernet_utils.multipath_to_trajs.html#bayes_covernet.tf.model.covernet_utils.multipath_to_trajs">[docs]</a><span class="k">def</span> <span class="nf">multipath_to_trajs</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_preds</span><span class="p">,</span> <span class="n">lattice</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Maps the MultiPath output to the trajectory represented by that class, with shift. Only applied to y_pred</span>
+
+<span class="sd">    :param tf.Tensor y_true: ground truth, not used</span>
+<span class="sd">    :param tf.Tensor y_pred: predictive class probabilities</span>
+<span class="sd">    :param tf.Tensor lattice: array of trajectories for each class with (CLASS,STEP,POS) format</span>
+<span class="sd">    :return: y_true, array with (CLASS,STEP,POS), ordered by the prediction probability</span>
+<span class="sd">    :rtype: tf.Tensor, tf.Tensor</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y_pred_cls</span><span class="p">,</span> <span class="n">y_pred_means</span> <span class="o">=</span> <span class="n">y_preds</span> 
+    <span class="n">y_true</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">y_true</span>
+    <span class="n">best_n</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">y_pred_cls</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s1">&#39;DESCENDING&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">collected_trajs</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">repeats</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">best_n</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="o">+</span> <span class="n">y_pred_means</span><span class="p">,</span>
+        <span class="n">best_n</span><span class="p">,</span>
+        <span class="n">batch_dims</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">collected_trajs</span></div>
+
+
+<div class="viewcode-block" id="covernet_to_class"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.covernet_utils.covernet_to_class.html#bayes_covernet.tf.model.covernet_utils.covernet_to_class">[docs]</a><span class="k">def</span> <span class="nf">covernet_to_class</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">lattice</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts the ground truth trajectory to the index of the closest trajectory in the covernet trajectory set</span>
+
+<span class="sd">    :param tf.Tensor y_true: ground truth trajectory</span>
+<span class="sd">    :param tf.Tensor y_pred: predictive class probabilities, not used</span>
+<span class="sd">    :param tf.Tensor lattice: array of trajectories for each class with (CLASS,STEP,POS) format</span>
+<span class="sd">    :return: index of the closest trajectory, y_pred</span>
+<span class="sd">    :rtype: tf.Tensor, tf.Tensor</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y_true</span> <span class="o">=</span> <span class="n">closest_trajectory</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="n">y_true</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span></div>
+
+
+<div class="viewcode-block" id="covernet_to_multilabel"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.covernet_utils.covernet_to_multilabel.html#bayes_covernet.tf.model.covernet_utils.covernet_to_multilabel">[docs]</a><span class="k">def</span> <span class="nf">covernet_to_multilabel</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts the ground truth trajectories to a boolean array, defining the availability label. Assumes that y_true has the same shape as lattice and the not available trajectories have 0 everywhere.</span>
+
+<span class="sd">    :param tf.Tensor y_true: ground truth trajectory</span>
+<span class="sd">    :param tf.Tensor y_pred: predictive class probabilities, not used</span>
+<span class="sd">    :param tf.Tensor lattice: array of trajectories for each class with (CLASS,STEP,POS) format</span>
+<span class="sd">    :return: bool array of available trajectories, y_pred</span>
+<span class="sd">    :rtype: tf.Tensor, tf.Tensor</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y_true</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span></div>
+
+
+<div class="viewcode-block" id="closest_trajectory"><a class="viewcode-back" href="../../../../generated/bayes_covernet.tf.model.covernet_utils.closest_trajectory.html#bayes_covernet.tf.model.covernet_utils.closest_trajectory">[docs]</a><span class="k">def</span> <span class="nf">closest_trajectory</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="n">ground_truth</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determines the closest trajectory from the CoverNet, wrt. l2 distance.</span>
+
+<span class="sd">    :param tf.Tensor lattice: lattice of trajectories</span>
+<span class="sd">    :param tf.Tensor ground_truth: single trajectory</span>
+<span class="sd">    :return: Trajectory index</span>
+<span class="sd">    :rtype: tf.Tensor</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">stacked_ground_truth</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">ground_truth</span><span class="p">,</span> <span class="n">repeats</span><span class="o">=</span><span class="n">lattice</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span><span class="n">lattice</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+                <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span>
+                    <span class="n">tf</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">stacked_ground_truth</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                    <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 - 2022, Continental Heat AI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

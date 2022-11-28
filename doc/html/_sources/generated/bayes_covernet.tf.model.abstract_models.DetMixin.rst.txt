@@ -1,0 +1,13 @@
+bayes\_covernet.tf.model.abstract\_models.DetMixin
+==================================================
+
+.. currentmodule:: bayes_covernet.tf.model.abstract_models
+
+.. autoclass:: DetMixin
+   :members:
+   :show-inheritance:
+   :private-members:
+   :undoc-members:
+   :inherited-members:
+   
+   .. autoclasstoc::

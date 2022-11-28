@@ -1,0 +1,13 @@
+bayes\_covernet.pytorch.model.models.ResNetBackbonePretrained
+=============================================================
+
+.. currentmodule:: bayes_covernet.pytorch.model.models
+
+.. autoclass:: ResNetBackbonePretrained
+   :members:
+   :show-inheritance:
+   :private-members:
+   :undoc-members:
+   :inherited-members:
+   
+   .. autoclasstoc::

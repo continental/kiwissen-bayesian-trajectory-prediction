@@ -1,0 +1,4 @@
+robustness_metrics @ git+https://github.com/google-research/robustness_metrics.git#egg=robustness_metrics
+uncertainty_baselines @ git+https://github.com/google/uncertainty-baselines.git@d97fa480394f291551fa01e1b3680163117a8b1a#egg=uncertainty_baselines
+numpy==1.20.1
+seqio==0.0.6

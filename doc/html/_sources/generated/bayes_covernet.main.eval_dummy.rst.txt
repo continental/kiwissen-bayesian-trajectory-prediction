@@ -1,0 +1,6 @@
+bayes\_covernet.main.eval\_dummy
+================================
+
+.. currentmodule:: bayes_covernet.main
+
+.. autofunction:: eval_dummy

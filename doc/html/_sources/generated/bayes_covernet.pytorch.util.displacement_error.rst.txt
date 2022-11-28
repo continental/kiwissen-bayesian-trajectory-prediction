@@ -1,0 +1,6 @@
+bayes\_covernet.pytorch.util.displacement\_error
+================================================
+
+.. currentmodule:: bayes_covernet.pytorch.util
+
+.. autofunction:: displacement_error

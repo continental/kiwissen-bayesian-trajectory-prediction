@@ -1,0 +1,6 @@
+bayes\_covernet.tf.fixes.update\_state
+======================================
+
+.. currentmodule:: bayes_covernet.tf.fixes
+
+.. autofunction:: update_state

@@ -1,0 +1,44 @@
+bayes\_covernet.tf.model.training
+=================================
+    
+.. rubric:: Description
+
+.. automodule:: bayes_covernet.tf.model.training
+   
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    .. rubric:: Classes
+
+    .. autosummary::
+        :toctree:
+        :nosignatures:
+        
+        ~ResetCovarianceCallback
+        
+        ~Trainer
+        
+        ~TuneableTrainer
+        
+
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    

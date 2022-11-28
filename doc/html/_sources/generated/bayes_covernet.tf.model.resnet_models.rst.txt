@@ -1,0 +1,48 @@
+bayes\_covernet.tf.model.resnet\_models
+=======================================
+    
+.. rubric:: Description
+
+.. automodule:: bayes_covernet.tf.model.resnet_models
+   
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    .. rubric:: Classes
+
+    .. autosummary::
+        :toctree:
+        :nosignatures:
+        
+        ~ResNet50DetMVNMixin
+        
+        ~ResNet50DetMixin
+        
+        ~ResNet50ModelFactory
+        
+        ~ResNet50SNGPMixin
+        
+        ~ResNet50VIMixin
+        
+
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    

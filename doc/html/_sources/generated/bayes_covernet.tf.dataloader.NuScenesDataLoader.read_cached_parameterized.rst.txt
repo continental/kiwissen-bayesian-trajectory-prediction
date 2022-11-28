@@ -1,0 +1,6 @@
+bayes\_covernet.tf.dataloader.NuScenesDataLoader.read\_cached\_parameterized
+============================================================================
+
+.. currentmodule:: bayes_covernet.tf.dataloader.NuScenesDataLoader
+
+.. autofunction:: read_cached_parameterized

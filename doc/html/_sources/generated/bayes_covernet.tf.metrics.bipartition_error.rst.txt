@@ -1,0 +1,6 @@
+bayes\_covernet.tf.metrics.bipartition\_error
+=============================================
+
+.. currentmodule:: bayes_covernet.tf.metrics
+
+.. autofunction:: bipartition_error

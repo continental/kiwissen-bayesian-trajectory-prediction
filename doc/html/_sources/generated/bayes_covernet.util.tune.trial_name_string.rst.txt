@@ -1,0 +1,6 @@
+bayes\_covernet.util.tune.trial\_name\_string
+=============================================
+
+.. currentmodule:: bayes_covernet.util.tune
+
+.. autofunction:: trial_name_string

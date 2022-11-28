@@ -1,0 +1,6 @@
+bayes\_covernet.main.single\_run\_and\_eval
+===========================================
+
+.. currentmodule:: bayes_covernet.main
+
+.. autofunction:: single_run_and_eval

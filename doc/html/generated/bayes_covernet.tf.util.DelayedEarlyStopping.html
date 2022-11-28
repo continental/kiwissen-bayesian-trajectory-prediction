@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bayes_covernet.tf.util.DelayedEarlyStopping &mdash; Bayesian Continual Learning  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/my_theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/autoclasstoc.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="bayes_covernet.tf.util.LastMetricWrapper" href="bayes_covernet.tf.util.LastMetricWrapper.html" />
+    <link rel="prev" title="bayes_covernet.tf.util.CyclicalPowerLearningRate" href="bayes_covernet.tf.util.CyclicalPowerLearningRate.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Bayesian Continual Learning
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../mdfiles.html">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../apidoc.html">API Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="bayes_covernet.html">bayes_covernet</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="bayes_covernet.main.html">bayes_covernet.main</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bayes_covernet.pytorch.html">bayes_covernet.pytorch</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="bayes_covernet.tf.html">bayes_covernet.tf</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="bayes_covernet.tf.dataloader.html">bayes_covernet.tf.dataloader</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bayes_covernet.tf.fixes.html">bayes_covernet.tf.fixes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bayes_covernet.tf.metrics.html">bayes_covernet.tf.metrics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bayes_covernet.tf.model.html">bayes_covernet.tf.model</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="bayes_covernet.tf.util.html">bayes_covernet.tf.util</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bayes_covernet.util.html">bayes_covernet.util</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">Code Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../licenses.html">Licenses</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Bayesian Continual Learning</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../apidoc.html">API Documentation</a> &raquo;</li>
+          <li><a href="bayes_covernet.html">bayes_covernet</a> &raquo;</li>
+          <li><a href="bayes_covernet.tf.html">bayes_covernet.tf</a> &raquo;</li>
+          <li><a href="bayes_covernet.tf.util.html">bayes_covernet.tf.util</a> &raquo;</li>
+      <li>bayes_covernet.tf.util.DelayedEarlyStopping</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/generated/bayes_covernet.tf.util.DelayedEarlyStopping.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="bayes-covernet-tf-util-delayedearlystopping">
+<h1>bayes_covernet.tf.util.DelayedEarlyStopping<a class="headerlink" href="#bayes-covernet-tf-util-delayedearlystopping" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="bayes_covernet.tf.util.DelayedEarlyStopping">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DelayedEarlyStopping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_delay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/util.html#DelayedEarlyStopping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.util.DelayedEarlyStopping" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">keras.callbacks.EarlyStopping</span></code></p>
+<p>EarlyStopping that is only applied after an initial delay phase.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>start_delay</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of epochs to ignore the metrics.</p>
+</dd>
+</dl>
+<div class="autoclasstoc docutils container">
+<p class="rubric">Public Methods:</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code>([start_delay])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bayes_covernet.tf.util.DelayedEarlyStopping.on_epoch_end" title="bayes_covernet.tf.util.DelayedEarlyStopping.on_epoch_end"><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_epoch_end</span></code></a>(epoch[, logs])</p></td>
+<td><p>Called at the end of an epoch.</p></td>
+</tr>
+</tbody>
+</table>
+<details><summary>Inherited from <code class="xref py py-class docutils literal notranslate"><span class="pre">EarlyStopping</span></code></summary><table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code>([start_delay])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_train_begin</span></code>([logs])</p></td>
+<td><p>Called at the beginning of training.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bayes_covernet.tf.util.DelayedEarlyStopping.on_epoch_end" title="bayes_covernet.tf.util.DelayedEarlyStopping.on_epoch_end"><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_epoch_end</span></code></a>(epoch[, logs])</p></td>
+<td><p>Called at the end of an epoch.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_train_end</span></code>([logs])</p></td>
+<td><p>Called at the end of training.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_monitor_value</span></code>(logs)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</details><details><summary>Inherited from <code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></summary><table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code>([start_delay])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_params</span></code>(params)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_model</span></code>(model)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_batch_begin</span></code>(batch[, logs])</p></td>
+<td><p>A backwards compatibility alias for <cite>on_train_batch_begin</cite>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_batch_end</span></code>(batch[, logs])</p></td>
+<td><p>A backwards compatibility alias for <cite>on_train_batch_end</cite>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_epoch_begin</span></code>(epoch[, logs])</p></td>
+<td><p>Called at the start of an epoch.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bayes_covernet.tf.util.DelayedEarlyStopping.on_epoch_end" title="bayes_covernet.tf.util.DelayedEarlyStopping.on_epoch_end"><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_epoch_end</span></code></a>(epoch[, logs])</p></td>
+<td><p>Called at the end of an epoch.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_train_batch_begin</span></code>(batch[, logs])</p></td>
+<td><p>Called at the beginning of a training batch in <cite>fit</cite> methods.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_train_batch_end</span></code>(batch[, logs])</p></td>
+<td><p>Called at the end of a training batch in <cite>fit</cite> methods.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_test_batch_begin</span></code>(batch[, logs])</p></td>
+<td><p>Called at the beginning of a batch in <cite>evaluate</cite> methods.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_test_batch_end</span></code>(batch[, logs])</p></td>
+<td><p>Called at the end of a batch in <cite>evaluate</cite> methods.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_predict_batch_begin</span></code>(batch[, logs])</p></td>
+<td><p>Called at the beginning of a batch in <cite>predict</cite> methods.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_predict_batch_end</span></code>(batch[, logs])</p></td>
+<td><p>Called at the end of a batch in <cite>predict</cite> methods.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_train_begin</span></code>([logs])</p></td>
+<td><p>Called at the beginning of training.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_train_end</span></code>([logs])</p></td>
+<td><p>Called at the end of training.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_test_begin</span></code>([logs])</p></td>
+<td><p>Called at the beginning of evaluation or validation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_test_end</span></code>([logs])</p></td>
+<td><p>Called at the end of evaluation or validation.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_predict_begin</span></code>([logs])</p></td>
+<td><p>Called at the beginning of prediction.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_predict_end</span></code>([logs])</p></td>
+<td><p>Called at the end of prediction.</p></td>
+</tr>
+</tbody>
+</table>
+</details></div>
+<div class="autoclasstoc docutils container">
+<p class="rubric">Private Methods:</p>
+<details><summary>Inherited from <code class="xref py py-class docutils literal notranslate"><span class="pre">EarlyStopping</span></code></summary><table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">_is_improvement</span></code>(monitor_value, reference_value)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</details><details><summary>Inherited from <code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></summary><table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">_implements_train_batch_hooks</span></code>()</p></td>
+<td><p>Determines if this Callback should be called for each train batch.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">_implements_test_batch_hooks</span></code>()</p></td>
+<td><p>Determines if this Callback should be called for each test batch.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">_implements_predict_batch_hooks</span></code>()</p></td>
+<td><p>Determines if this Callback should be called for each predict batch.</p></td>
+</tr>
+</tbody>
+</table>
+</details></div>
+<hr class="docutils" />
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_covernet.tf.util.DelayedEarlyStopping.on_epoch_end">
+<span class="sig-name descname"><span class="pre">on_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/util.html#DelayedEarlyStopping.on_epoch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.util.DelayedEarlyStopping.on_epoch_end" title="Permalink to this definition"></a></dt>
+<dd><p>Called at the end of an epoch.</p>
+<p>Subclasses should override for any actions to run. This function should only
+be called during TRAIN mode.</p>
+<dl>
+<dt>Args:</dt><dd><p>epoch: Integer, index of epoch.
+logs: Dict, metric results for this training epoch, and for the</p>
+<blockquote>
+<div><blockquote>
+<div><p>validation epoch if validation is performed. Validation result keys
+are prefixed with <cite>val_</cite>. For training epoch, the values of the</p>
+</div></blockquote>
+<dl>
+<dt><cite>Model</cite>’s metrics are returned. Example<span class="classifier"><a href="#id1"><span class="problematic" id="id2">`</span></a>{‘loss’: 0.2, ‘accuracy’:</span></dt><dd><p>0.7}`.</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="bayes_covernet.tf.util.CyclicalPowerLearningRate.html" class="btn btn-neutral float-left" title="bayes_covernet.tf.util.CyclicalPowerLearningRate" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bayes_covernet.tf.util.LastMetricWrapper.html" class="btn btn-neutral float-right" title="bayes_covernet.tf.util.LastMetricWrapper" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 - 2022, Continental Heat AI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

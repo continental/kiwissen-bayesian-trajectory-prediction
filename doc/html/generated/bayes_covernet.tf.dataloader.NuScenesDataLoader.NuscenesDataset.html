@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset &mdash; Bayesian Continual Learning  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/my_theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/autoclasstoc.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="bayes_covernet.tf.dataloader.NuScenesDataLoader.read_cached_parameterized" href="bayes_covernet.tf.dataloader.NuScenesDataLoader.read_cached_parameterized.html" />
+    <link rel="prev" title="bayes_covernet.tf.dataloader.NuScenesDataLoader" href="bayes_covernet.tf.dataloader.NuScenesDataLoader.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Bayesian Continual Learning
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../mdfiles.html">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../apidoc.html">API Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="bayes_covernet.html">bayes_covernet</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="bayes_covernet.main.html">bayes_covernet.main</a></li>
+<li class="toctree-l3"><a class="reference internal" href="bayes_covernet.pytorch.html">bayes_covernet.pytorch</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="bayes_covernet.tf.html">bayes_covernet.tf</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="bayes_covernet.tf.dataloader.html">bayes_covernet.tf.dataloader</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bayes_covernet.tf.fixes.html">bayes_covernet.tf.fixes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bayes_covernet.tf.metrics.html">bayes_covernet.tf.metrics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bayes_covernet.tf.model.html">bayes_covernet.tf.model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="bayes_covernet.tf.util.html">bayes_covernet.tf.util</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bayes_covernet.util.html">bayes_covernet.util</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">Code Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../licenses.html">Licenses</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Bayesian Continual Learning</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../apidoc.html">API Documentation</a> &raquo;</li>
+          <li><a href="bayes_covernet.html">bayes_covernet</a> &raquo;</li>
+          <li><a href="bayes_covernet.tf.html">bayes_covernet.tf</a> &raquo;</li>
+          <li><a href="bayes_covernet.tf.dataloader.html">bayes_covernet.tf.dataloader</a> &raquo;</li>
+          <li><a href="bayes_covernet.tf.dataloader.NuScenesDataLoader.html">bayes_covernet.tf.dataloader.NuScenesDataLoader</a> &raquo;</li>
+      <li>bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/generated/bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="bayes-covernet-tf-dataloader-nuscenesdataloader-nuscenesdataset">
+<h1>bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset<a class="headerlink" href="#bayes-covernet-tf-dataloader-nuscenesdataloader-nuscenesdataset" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">NuscenesDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">split</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'D:/nuScenes_mini'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cache'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'v1.0-mini'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps_set</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_all_valid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mp_pool</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/dataloader/NuScenesDataLoader.html#NuscenesDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>NuScenes dataset with preprocessing pipeline</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>split</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – train, train_val or val</p></li>
+<li><p><strong>cache_dir</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>,</em><em>None</em>) – Optional. Caching directory</p></li>
+<li><p><strong>data_version</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – NuScenes dataset version name</p></li>
+<li><p><strong>limit</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Limit in terms of instances of map name</p></li>
+<li><p><strong>eps_set</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Covernet epsilon value for trajectory set</p></li>
+<li><p><strong>y_all_valid</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – If True, y will be all valid trajectories, instead of observed</p></li>
+</ul>
+</dd>
+<dt class="field-even">Oaram str data_dir</dt>
+<dd class="field-even"><p>dataset root folder</p>
+</dd>
+<dt class="field-odd">Paran mp_pool</dt>
+<dd class="field-odd"><p>Optional. Multiprocessing pool for reuse</p>
+</dd>
+</dl>
+<div class="autoclasstoc docutils container">
+<p class="rubric">Public Methods:</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code>(split[, data_dir, cache_dir, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.is_possible_trajectory" title="bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.is_possible_trajectory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_possible_trajectory</span></code></a>(trajectory, ...)</p></td>
+<td><p>Determines if all keypoints of the trajectory are within the polygons area.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.point_on_polygons" title="bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.point_on_polygons"><code class="xref py py-obj docutils literal notranslate"><span class="pre">point_on_polygons</span></code></a>(x, y, polygons)</p></td>
+<td><p>Determines if a single point is within the polygons area.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.get_map_mappings" title="bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.get_map_mappings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_map_mappings</span></code></a>(**kwargs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.read_target_trajectories" title="bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.read_target_trajectories"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_target_trajectories</span></code></a>(**kwargs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.read_possible_trajectories" title="bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.read_possible_trajectories"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_possible_trajectories</span></code></a>(**kwargs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.read_image" title="bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.read_image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_image</span></code></a>(**kwargs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.read_agent_state" title="bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.read_agent_state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_agent_state</span></code></a>(**kwargs)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.get_dataset" title="bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.get_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dataset</span></code></a>([shuffle])</p></td>
+<td><p>Returns the dataset, as specified by the constructor.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr class="docutils" />
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.get_dataset">
+<span class="sig-name descname"><span class="pre">get_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/dataloader/NuScenesDataLoader.html#NuscenesDataset.get_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.get_dataset" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the dataset, as specified by the constructor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>shuffle</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Dataset is shuffled</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The dataset</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tf.data.Dataset</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.get_map_mappings">
+<span class="sig-name descname"><span class="pre">get_map_mappings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/dataloader/NuScenesDataLoader.html#NuscenesDataset.get_map_mappings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.get_map_mappings" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.is_possible_trajectory">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_possible_trajectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trajectory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">translation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polygons</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/dataloader/NuScenesDataLoader.html#NuscenesDataset.is_possible_trajectory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.is_possible_trajectory" title="Permalink to this definition"></a></dt>
+<dd><p>Determines if all keypoints of the trajectory are within the polygons area.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trajectory</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a>) – List of 2D points</p></li>
+<li><p><strong>translation</strong> – Translation matrix local to global</p></li>
+<li><p><strong>rotation</strong> – Rotation matrix local to global</p></li>
+<li><p><strong>list</strong> – List of polygons</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True, all points within area</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.point_on_polygons">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">point_on_polygons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polygons</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/dataloader/NuScenesDataLoader.html#NuscenesDataset.point_on_polygons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.point_on_polygons" title="Permalink to this definition"></a></dt>
+<dd><p>Determines if a single point is within the polygons area.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – X coordinate</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Y coordinate</p></li>
+<li><p><strong>list</strong> – List of polygons</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True, all points within area</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.read_agent_state">
+<span class="sig-name descname"><span class="pre">read_agent_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/dataloader/NuScenesDataLoader.html#NuscenesDataset.read_agent_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.read_agent_state" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.read_image">
+<span class="sig-name descname"><span class="pre">read_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/dataloader/NuScenesDataLoader.html#NuscenesDataset.read_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.read_image" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.read_possible_trajectories">
+<span class="sig-name descname"><span class="pre">read_possible_trajectories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/dataloader/NuScenesDataLoader.html#NuscenesDataset.read_possible_trajectories"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.read_possible_trajectories" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.read_target_trajectories">
+<span class="sig-name descname"><span class="pre">read_target_trajectories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/bayes_covernet/tf/dataloader/NuScenesDataLoader.html#NuscenesDataset.read_target_trajectories"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.read_target_trajectories" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.helper">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">helper</span></span><a class="headerlink" href="#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.helper" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.maps">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">maps</span></span><a class="headerlink" href="#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.maps" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.mtp_input_representation">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mtp_input_representation</span></span><a class="headerlink" href="#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.mtp_input_representation" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.trajectories_ego">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">trajectories_ego</span></span><a class="headerlink" href="#bayes_covernet.tf.dataloader.NuScenesDataLoader.NuscenesDataset.trajectories_ego" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="bayes_covernet.tf.dataloader.NuScenesDataLoader.html" class="btn btn-neutral float-left" title="bayes_covernet.tf.dataloader.NuScenesDataLoader" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bayes_covernet.tf.dataloader.NuScenesDataLoader.read_cached_parameterized.html" class="btn btn-neutral float-right" title="bayes_covernet.tf.dataloader.NuScenesDataLoader.read_cached_parameterized" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 - 2022, Continental Heat AI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bayes_covernet.main &mdash; Bayesian Continual Learning  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/my_theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/autoclasstoc.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Bayesian Continual Learning
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html">Bayesian Continual Learning for Prior Knowledge Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../apidoc.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../licenses.html">Licenses</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Bayesian Continual Learning</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>bayes_covernet.main</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bayes_covernet.main</h1><div class="highlight"><pre>
+<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Main run functions.</span>
+
+<span class="sd">Copyright (c) 2021-2022 Continental AG.</span>
+
+<span class="sd">@author: Christian Wirth &lt;christian.2.wirth@continental-corporation.com&gt;</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">import</span> <span class="nn">gin</span>
+<span class="kn">from</span> <span class="nn">ray</span> <span class="kn">import</span> <span class="n">tune</span>
+<span class="kn">import</span> <span class="nn">ray</span>
+<span class="kn">from</span> <span class="nn">ray.tune.registry</span> <span class="kn">import</span> <span class="n">register_trainable</span>
+<span class="kn">from</span> <span class="nn">ray.tune.schedulers.hb_bohb</span> <span class="kn">import</span> <span class="n">HyperBandForBOHB</span>
+<span class="kn">from</span> <span class="nn">ray.tune.schedulers.pbt</span> <span class="kn">import</span> <span class="n">PopulationBasedTraining</span>
+<span class="kn">from</span> <span class="nn">ray.tune.suggest.bohb</span> <span class="kn">import</span> <span class="n">TuneBOHB</span>
+<span class="kn">from</span> <span class="nn">ray.tune.suggest.hebo</span> <span class="kn">import</span> <span class="n">HEBOSearch</span>
+<span class="kn">from</span> <span class="nn">ray.tune.suggest.variant_generator</span> <span class="kn">import</span> <span class="n">grid_search</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">from</span> <span class="nn">bayes_covernet.util.config</span> <span class="kn">import</span> <span class="n">paramSearch</span>
+<span class="kn">from</span> <span class="nn">bayes_covernet.util.tune</span> <span class="kn">import</span> <span class="n">trial_name_string</span>
+
+
+<div class="viewcode-block" id="eval_dummy"><a class="viewcode-back" href="../../generated/bayes_covernet.main.eval_dummy.html#bayes_covernet.main.eval_dummy">[docs]</a><span class="k">def</span> <span class="nf">eval_dummy</span><span class="p">(</span><span class="n">return_dict</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">gin_config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates an Trainer object for determining the relevant hyperparameters.</span>
+
+<span class="sd">    :param dict return_dict: Dictionary that will contain the hyperparameters.</span>
+<span class="sd">    :param str name: Experiment name, also used for folders</span>
+<span class="sd">    :param dict args: Program arguments, must contain one of the optimizer flags and dir</span>
+<span class="sd">    :param str gin_config: Serialized gin config string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">bayes_covernet.tf.dataloader.NuScenesDataLoader</span> <span class="kn">import</span> <span class="n">NuscenesDataset</span>
+    <span class="kn">from</span> <span class="nn">bayes_covernet.tf.model.training</span> <span class="kn">import</span> <span class="n">Trainer</span>
+    <span class="kn">from</span> <span class="nn">bayes_covernet.tf.model.models</span> <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">Covernet</span><span class="p">,</span>
+        <span class="n">CovernetDet</span><span class="p">,</span>
+        <span class="n">CovernetSNGP</span><span class="p">,</span>
+        <span class="n">CovernetVI</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="kn">from</span> <span class="nn">bayes_covernet.util.config</span> <span class="kn">import</span> <span class="n">paramSearch</span>
+
+    <span class="n">gin</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">gin_config</span><span class="p">)</span>
+    <span class="n">trainer_dummy</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="n">current_time</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">resume_model</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">resume</span><span class="p">)</span>
+    <span class="n">default_config</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">trainer_dummy</span><span class="o">.</span><span class="n">hyperparameters</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;gin_config&quot;</span><span class="p">,</span> <span class="s2">&quot;dir&quot;</span><span class="p">]</span>
+    <span class="p">}</span>
+    <span class="n">return_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">default_config</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="run_tune"><a class="viewcode-back" href="../../generated/bayes_covernet.main.run_tune.html#bayes_covernet.main.run_tune">[docs]</a><span class="k">def</span> <span class="nf">run_tune</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">target_metric</span><span class="p">,</span> <span class="n">target_mode</span><span class="p">,</span> <span class="n">max_t</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Executes the ray tune optimizer.</span>
+
+<span class="sd">    :param str name: Experiment name, also used for folders</span>
+<span class="sd">    :param dict args: Program arguments, must contain one of the optimizer flags and dir</span>
+<span class="sd">    :param str target_metric: Metric to optimize</span>
+<span class="sd">    :param str target_mode: min or max for optimization direction</span>
+<span class="sd">    :param int max_t: Maximum number of epochs per trial</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Manager</span><span class="p">()</span>
+    <span class="n">return_dict</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
+
+    <span class="n">process_eval</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span>
+        <span class="n">target</span><span class="o">=</span><span class="n">eval_dummy</span><span class="p">,</span>
+        <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;return_dict&quot;</span><span class="p">:</span> <span class="n">return_dict</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="n">args</span><span class="p">,</span>
+            <span class="s2">&quot;gin_config&quot;</span><span class="p">:</span> <span class="n">gin</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">config_str</span><span class="p">(),</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+    <span class="n">process_eval</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">process_eval</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+    <span class="n">default_config</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">return_dict</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">optimize1</span><span class="p">:</span>
+        <span class="n">space_keys</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">num_trials</span> <span class="o">=</span> <span class="n">paramSearch</span><span class="p">(</span>
+            <span class="n">default_config</span><span class="o">=</span><span class="n">default_config</span><span class="p">,</span> <span class="n">space_name</span><span class="o">=</span><span class="s2">&quot;Sampler&quot;</span>
+        <span class="p">)</span>
+        <span class="n">scheduler</span> <span class="o">=</span> <span class="n">PopulationBasedTraining</span><span class="p">(</span>
+            <span class="n">perturbation_interval</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">hyperparam_mutations</span><span class="o">=</span><span class="n">config</span>
+        <span class="p">)</span>
+        <span class="n">search_alg</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">num_samples</span> <span class="o">=</span> <span class="mi">2</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">test</span> <span class="k">else</span> <span class="n">num_trials</span>
+    <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">optimize2</span><span class="p">:</span>
+        <span class="n">space_keys</span><span class="p">,</span> <span class="n">search_space</span><span class="p">,</span> <span class="n">num_trials</span> <span class="o">=</span> <span class="n">paramSearch</span><span class="p">(</span>
+            <span class="n">default_config</span><span class="o">=</span><span class="n">default_config</span><span class="p">,</span> <span class="n">space_name</span><span class="o">=</span><span class="s2">&quot;ConfigSpace&quot;</span>
+        <span class="p">)</span>
+        <span class="n">scheduler</span> <span class="o">=</span> <span class="n">HyperBandForBOHB</span><span class="p">(</span>
+            <span class="n">time_attr</span><span class="o">=</span><span class="s2">&quot;training_iteration&quot;</span><span class="p">,</span>
+            <span class="n">max_t</span><span class="o">=</span><span class="n">max_t</span><span class="p">,</span>
+            <span class="n">reduction_factor</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+            <span class="n">stop_last_trials</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">search_alg</span> <span class="o">=</span> <span class="n">TuneBOHB</span><span class="p">(</span>
+            <span class="n">metric</span><span class="o">=</span><span class="n">target_metric</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="n">target_mode</span><span class="p">,</span>
+            <span class="n">space</span><span class="o">=</span><span class="n">search_space</span><span class="p">,</span>  <span class="c1"># If you want to set the space manually</span>
+            <span class="n">max_concurrent</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># Does not work</span>
+        <span class="c1"># search_alg = TuneBOHBRepeater(search_alg,repeats,set_index=False)</span>
+
+        <span class="n">num_samples</span> <span class="o">=</span> <span class="mi">5</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">test</span> <span class="k">else</span> <span class="n">num_trials</span>
+    <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">optimize3</span><span class="p">:</span>
+        <span class="n">space_keys</span><span class="p">,</span> <span class="n">search_space</span><span class="p">,</span> <span class="n">num_trials</span> <span class="o">=</span> <span class="n">paramSearch</span><span class="p">(</span>
+            <span class="n">default_config</span><span class="o">=</span><span class="n">default_config</span><span class="p">,</span> <span class="n">space_name</span><span class="o">=</span><span class="s2">&quot;Ray&quot;</span>
+        <span class="p">)</span>
+        <span class="n">search_alg</span> <span class="o">=</span> <span class="n">HEBOSearch</span><span class="p">(</span>
+            <span class="n">space</span><span class="o">=</span><span class="n">search_space</span><span class="p">,</span>
+            <span class="n">metric</span><span class="o">=</span><span class="n">target_metric</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="n">target_mode</span><span class="p">,</span>
+            <span class="n">max_concurrent</span><span class="o">=</span><span class="mi">1</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">test</span> <span class="k">else</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">scheduler</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">num_samples</span> <span class="o">=</span> <span class="mi">2</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">test</span> <span class="k">else</span> <span class="n">num_trials</span>
+
+    <span class="n">tune_result</span> <span class="o">=</span> <span class="n">tune</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="n">TuneableTrainer</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">resources_per_trial</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;cpu&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">test</span> <span class="k">else</span> <span class="p">{</span><span class="s2">&quot;gpu&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+        <span class="n">num_samples</span><span class="o">=</span><span class="n">num_samples</span><span class="p">,</span>
+        <span class="n">metric</span><span class="o">=</span><span class="n">target_metric</span><span class="p">,</span>
+        <span class="n">checkpoint_score_attr</span><span class="o">=</span><span class="n">target_mode</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="n">target_metric</span><span class="p">,</span>
+        <span class="n">checkpoint_freq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="n">target_mode</span><span class="p">,</span>
+        <span class="n">search_alg</span><span class="o">=</span><span class="n">search_alg</span><span class="p">,</span>
+        <span class="n">config</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;gin_config&quot;</span><span class="p">:</span> <span class="n">gin</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">config_str</span><span class="p">(),</span>
+            <span class="s2">&quot;dir&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span>
+            <span class="s2">&quot;load_model&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">init</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="n">stop</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;training_iteration&quot;</span><span class="p">:</span> <span class="n">max_t</span><span class="p">},</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">scheduler</span><span class="o">=</span><span class="n">scheduler</span><span class="p">,</span>
+        <span class="n">keep_checkpoints_num</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">local_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">dir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;ray_tune&quot;</span><span class="p">,</span>
+        <span class="n">trial_dirname_creator</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">trial_name_string</span><span class="p">,</span> <span class="n">consider_keys</span><span class="o">=</span><span class="n">space_keys</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">dir</span> <span class="o">/</span> <span class="s2">&quot;ray_tune&quot;</span> <span class="o">/</span> <span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">tune_result</span><span class="o">.</span><span class="n">results_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">dir</span> <span class="o">/</span> <span class="s2">&quot;ray_tune&quot;</span> <span class="o">/</span> <span class="n">name</span> <span class="o">/</span> <span class="s2">&quot;tune_results.csv&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">dir</span> <span class="o">/</span> <span class="s2">&quot;ray_tune&quot;</span> <span class="o">/</span> <span class="n">name</span> <span class="o">/</span> <span class="s2">&quot;tune_results.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">tune_result</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">tune_result</span></div>
+
+
+<div class="viewcode-block" id="rerun_config"><a class="viewcode-back" href="../../generated/bayes_covernet.main.rerun_config.html#bayes_covernet.main.rerun_config">[docs]</a><span class="k">def</span> <span class="nf">rerun_config</span><span class="p">(</span><span class="n">best_config</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">target_metric</span><span class="p">,</span> <span class="n">target_mode</span><span class="p">,</span> <span class="n">max_t</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reruns the best found hyperparameter configuration 4 times.</span>
+
+<span class="sd">    :param dict best_config: Hyperparameter configuration to use</span>
+<span class="sd">    :param str name: Experiment name, also used for folders</span>
+<span class="sd">    :param dict args: Program arguments, must contain dir</span>
+<span class="sd">    :param str target_metric: Metric to optimize</span>
+<span class="sd">    :param str target_mode: min or max for optimization direction</span>
+<span class="sd">    :param int max_t: Maximum number of epochs per run</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tune_result_rerun</span> <span class="o">=</span> <span class="n">tune</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="n">TuneableTrainer</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">resources_per_trial</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;cpu&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">test</span> <span class="k">else</span> <span class="p">{</span><span class="s2">&quot;gpu&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+        <span class="n">num_samples</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="n">checkpoint_score_attr</span><span class="o">=</span><span class="n">target_mode</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="n">target_metric</span><span class="p">,</span>
+        <span class="n">checkpoint_freq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">config</span><span class="o">=</span><span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;gin_config&quot;</span><span class="p">,</span> <span class="s2">&quot;dir&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="n">grid_search</span><span class="p">([</span><span class="n">v</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">best_config</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">},</span>
+        <span class="n">stop</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;training_iteration&quot;</span><span class="p">:</span> <span class="n">max_t</span><span class="p">},</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">keep_checkpoints_num</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">local_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">dir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;ray_tune&quot;</span><span class="p">,</span>
+        <span class="n">trial_dirname_creator</span><span class="o">=</span><span class="k">lambda</span> <span class="n">trial</span><span class="p">:</span> <span class="n">partial</span><span class="p">(</span><span class="n">trial_name_string</span><span class="p">,</span> <span class="n">consider_keys</span><span class="o">=</span><span class="p">[])</span>
+        <span class="o">+</span> <span class="s2">&quot;_eval&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">tune_result_rerun</span><span class="o">.</span><span class="n">results_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">dir</span> <span class="o">/</span> <span class="s2">&quot;ray_tune&quot;</span> <span class="o">/</span> <span class="n">name</span> <span class="o">/</span> <span class="s2">&quot;rerun_results.csv&quot;</span>
+    <span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">dir</span> <span class="o">/</span> <span class="s2">&quot;ray_tune&quot;</span> <span class="o">/</span> <span class="n">name</span> <span class="o">/</span> <span class="s2">&quot;rerun_results.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">tune_result_rerun</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">tune_result_rerun</span></div>
+
+
+<div class="viewcode-block" id="populate_cache"><a class="viewcode-back" href="../../generated/bayes_covernet.main.populate_cache.html#bayes_covernet.main.populate_cache">[docs]</a><span class="k">def</span> <span class="nf">populate_cache</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fills the cache</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mp_pool</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()))</span>
+    <span class="k">with</span> <span class="n">gin</span><span class="o">.</span><span class="n">config_scope</span><span class="p">(</span><span class="s1">&#39;train&#39;</span><span class="p">):</span>
+        <span class="n">train_dataset</span> <span class="o">=</span> <span class="n">NuscenesDataset</span><span class="p">(</span><span class="n">mp_pool</span><span class="o">=</span><span class="n">mp_pool</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">train_dataset</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">()</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="mi">1</span><span class="p">)):</span>
+            <span class="k">pass</span>
+
+    <span class="k">with</span> <span class="n">gin</span><span class="o">.</span><span class="n">config_scope</span><span class="p">(</span><span class="s1">&#39;val&#39;</span><span class="p">):</span>
+        <span class="n">val_dataset</span> <span class="o">=</span> <span class="n">NuscenesDataset</span><span class="p">(</span><span class="n">mp_pool</span><span class="o">=</span><span class="n">mp_pool</span><span class="p">)</span>
+        <span class="n">val_dataset</span><span class="o">.</span><span class="n">_helper</span> <span class="o">=</span> <span class="n">train_dataset</span><span class="o">.</span><span class="n">_helper</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">val_dataset</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">()</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="mi">1</span><span class="p">)):</span>
+            <span class="k">pass</span>
+
+    <span class="k">with</span> <span class="n">gin</span><span class="o">.</span><span class="n">config_scope</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">):</span>
+        <span class="n">test_dataset</span> <span class="o">=</span> <span class="n">NuscenesDataset</span><span class="p">(</span><span class="n">mp_pool</span><span class="o">=</span><span class="n">mp_pool</span><span class="p">,</span> <span class="n">y_all_valid</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">test_dataset</span><span class="o">.</span><span class="n">_helper</span> <span class="o">=</span> <span class="n">train_dataset</span><span class="o">.</span><span class="n">_helper</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">test_dataset</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">()</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="mi">1</span><span class="p">)):</span>
+            <span class="k">pass</span>
+
+        <span class="n">test_dataset</span> <span class="o">=</span> <span class="n">NuscenesDataset</span><span class="p">(</span><span class="n">mp_pool</span><span class="o">=</span><span class="n">mp_pool</span><span class="p">,</span> <span class="n">y_all_valid</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">test_dataset</span><span class="o">.</span><span class="n">_helper</span> <span class="o">=</span> <span class="n">train_dataset</span><span class="o">.</span><span class="n">_helper</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">test_dataset</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">()</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="mi">1</span><span class="p">)):</span>
+            <span class="k">pass</span>
+
+    <span class="n">mp_pool</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="single_run_and_eval"><a class="viewcode-back" href="../../generated/bayes_covernet.main.single_run_and_eval.html#bayes_covernet.main.single_run_and_eval">[docs]</a><span class="k">def</span> <span class="nf">single_run_and_eval</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">target_metric</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performes a single training run and evaluates the best result, if requested (args.eval).</span>
+
+<span class="sd">    :param dict args: Program arguments</span>
+<span class="sd">    :param str name: Experiment name</span>
+<span class="sd">    :param str target_metric: Metric to minimize (for selecting best result)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span>
+        <span class="nb">dir</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="n">current_time</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">resume_model</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">resume</span><span class="p">,</span> <span class="n">load_model</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">init</span>
+    <span class="p">)</span>
+    <span class="n">trainer</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+    <span class="n">epoch</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">start_epoch</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">notrain</span><span class="p">:</span>
+        <span class="n">history</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">run_training</span><span class="p">()</span>
+        <span class="n">best_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanargmin</span><span class="p">(</span><span class="n">history</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="n">target_metric</span><span class="p">])</span>
+        <span class="n">epoch</span> <span class="o">=</span> <span class="n">epoch</span> <span class="o">+</span> <span class="n">best_idx</span>
+        <span class="n">best_mdls</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">trainer</span><span class="o">.</span><span class="n">mdl_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Model_ep</span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s1">*.index&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">best_mdls</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;ERROR: Model_ep</span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s1">*.index returned </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">best_mdls</span><span class="p">)</span><span class="si">}</span><span class="s1"> models&#39;</span><span class="p">)</span>
+            <span class="n">epoch</span> <span class="o">=</span> <span class="n">epoch</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">history</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="n">target_metric</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span>
+                <span class="nb">dir</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span>
+                <span class="n">current_time</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">resume_model</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">best_mdls</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)),</span>
+            <span class="p">)</span>
+            <span class="n">trainer</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">eval</span><span class="p">:</span>
+        <span class="n">trainer</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+    <span class="c1"># logger.setLevel(logging.DEBUG)</span>
+
+    <span class="n">handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+    <span class="c1"># handler.setLevel(logging.DEBUG)</span>
+    <span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span>
+        <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(name)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1"> - </span><span class="si">%(message)s</span><span class="s1">&#39;</span>
+    <span class="p">)</span>
+    <span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="s2">&quot;--config&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;gin config filename&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-j&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--json&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;json config filename, override gin file&quot;</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-b&quot;</span><span class="p">,</span> <span class="s2">&quot;--backend&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;torch or tf&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;tf&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-e&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--eval&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;evalates the result on the test set&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-o1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--optimize1&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;optimizer hyperparameters with PBO&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-o2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--optimize2&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;optimizer hyperparameters with BOHB&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-o3&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--optimize3&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;optimizer hyperparameters with HEBO&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-i&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--init&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;load optimizer results [in o1/o2/o3 mode] or model file, as initial weights (excluding optimizer state).&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-r&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--resume&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Model file for resuming training (including optimizer state). Can not be used with init and not with optimization mode.&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-t&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--test&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;local test only, reduces runtime&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-d&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--dir&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;dir for results&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)))),</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-p&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--populate&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;popluate cache&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-n&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--notrain&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;evaluation only&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">json</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">json</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">jsonfile</span><span class="p">:</span>
+            <span class="n">additional_config</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">jsonfile</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">additional_config</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;$&quot;</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expanded </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">additional_config</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">additional_config</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">assert</span> <span class="n">args</span><span class="o">.</span><span class="n">config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="p">(</span>
+        <span class="s2">&quot;args&quot;</span> <span class="ow">in</span> <span class="n">additional_config</span> <span class="ow">and</span> <span class="s2">&quot;config&quot;</span> <span class="ow">in</span> <span class="n">additional_config</span><span class="p">[</span><span class="s2">&quot;args&quot;</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="s2">&quot;args&quot;</span> <span class="ow">in</span> <span class="n">additional_config</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">additional_config</span><span class="p">[</span><span class="s2">&quot;args&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;$&quot;</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expanded </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">backend</span> <span class="o">==</span> <span class="s2">&quot;torch&quot;</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">bayes_covernet.pytorch.dataloader.NuScenesDataLoader</span> <span class="kn">import</span> <span class="n">NuscenesDataset</span>
+        <span class="kn">from</span> <span class="nn">bayes_covernet.pytorch.model.training</span> <span class="kn">import</span> <span class="n">Trainer</span>
+        <span class="kn">from</span> <span class="nn">bayes_covernet.pytorch.model.models</span> <span class="kn">import</span> <span class="o">*</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">backend</span> <span class="o">==</span> <span class="s2">&quot;tf&quot;</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">bayes_covernet.tf.dataloader.NuScenesDataLoader</span> <span class="kn">import</span> <span class="n">NuscenesDataset</span>
+        <span class="kn">from</span> <span class="nn">bayes_covernet.tf.model.training</span> <span class="kn">import</span> <span class="n">Trainer</span><span class="p">,</span> <span class="n">TuneableTrainer</span>
+        <span class="kn">from</span> <span class="nn">bayes_covernet.tf.model.models</span> <span class="kn">import</span> <span class="o">*</span>
+
+    <span class="n">register_trainable</span><span class="p">(</span><span class="s2">&quot;TuneableTrainer&quot;</span><span class="p">,</span> <span class="n">TuneableTrainer</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s1">&#39;linux&#39;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span><span class="p">:</span>
+        <span class="n">pathlib</span><span class="o">.</span><span class="n">WindowsPath</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">PosixPath</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pathlib</span><span class="o">.</span><span class="n">PosixPath</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">WindowsPath</span>
+
+    <span class="n">gin</span><span class="o">.</span><span class="n">parse_config_file</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">additional_config</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">gin</span><span class="o">.</span><span class="n">bind_parameter</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+    <span class="n">eps_set</span> <span class="o">=</span> <span class="n">gin</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_CONFIG</span><span class="p">[(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;bayes_covernet.tf.model.training.Trainer&#39;</span><span class="p">)]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+        <span class="s1">&#39;eps_set&#39;</span><span class="p">,</span> <span class="mi">4</span>
+    <span class="p">)</span>
+    <span class="n">gin</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">bind_parameter</span><span class="p">(</span><span class="s1">&#39;NuscenesDataset.eps_set&#39;</span><span class="p">,</span> <span class="n">eps_set</span><span class="p">)</span>
+
+    <span class="n">multi_label</span> <span class="o">=</span> <span class="n">gin</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_CONFIG</span><span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;bayes_covernet.tf.model.training.Trainer&#39;</span><span class="p">)</span>
+    <span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;multi_label&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">multi_label</span> <span class="o">=</span> <span class="n">gin</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_CONFIG</span><span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;bayes_covernet.tf.model.training.Trainer&#39;</span><span class="p">)</span>
+    <span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;multi_label&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">prior_model</span> <span class="o">=</span> <span class="n">gin</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_CONFIG</span><span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;bayes_covernet.tf.model.training.Trainer&#39;</span><span class="p">)</span>
+    <span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;prior_model&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">multi_label</span> <span class="ow">and</span> <span class="n">prior_model</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="n">exp_type</span> <span class="o">=</span> <span class="s2">&quot;knowledge&quot;</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">multi_label</span> <span class="ow">and</span> <span class="n">prior_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="n">exp_type</span> <span class="o">=</span> <span class="s2">&quot;continual&quot;</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">multi_label</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">prior_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="n">exp_type</span> <span class="o">=</span> <span class="s2">&quot;trajectory&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Invalid combination of multi_label and prior model!&quot;</span><span class="p">)</span>
+
+    <span class="n">model_cls</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+        <span class="n">gin</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_CONFIG</span><span class="p">[(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;bayes_covernet.tf.model.training.Trainer&#39;</span><span class="p">)]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s1">&#39;model_factory&#39;</span>
+        <span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;@&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="n">args</span><span class="o">.</span><span class="n">dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">dir</span><span class="p">)</span> <span class="o">/</span> <span class="n">exp_type</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;Epsilon</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">eps_set</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span> <span class="o">/</span> <span class="n">model_cls</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">resume</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">notrain</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">resume</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%b</span><span class="si">%d</span><span class="s1">_%H-%M-%S&#39;</span><span class="p">)</span>
+
+    <span class="n">target_metric</span> <span class="o">=</span> <span class="s2">&quot;val_nll&quot;</span>
+    <span class="n">target_mode</span> <span class="o">=</span> <span class="s2">&quot;min&quot;</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">populate</span><span class="p">:</span>
+        <span class="n">populate_cache</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">optimize1</span> <span class="ow">or</span> <span class="n">args</span><span class="o">.</span><span class="n">optimize2</span> <span class="ow">or</span> <span class="n">args</span><span class="o">.</span><span class="n">optimize3</span><span class="p">:</span>
+        <span class="n">ray</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">local_mode</span><span class="o">=</span><span class="ow">not</span> <span class="n">sys</span><span class="o">.</span><span class="n">gettrace</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">max_t</span> <span class="o">=</span> <span class="n">gin</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_CONFIG</span><span class="p">[</span>
+            <span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;bayes_covernet.tf.model.training.Trainer&#39;</span><span class="p">)</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;epochs&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+
+        <span class="n">ray_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;ray&#39;</span><span class="p">)</span>
+        <span class="c1"># ray_logger.setLevel(logging.DEBUG)</span>
+        <span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">dir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;ray_tune&quot;</span> <span class="o">/</span> <span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">fh</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">dir</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;ray_tune&quot;</span> <span class="o">/</span> <span class="n">name</span> <span class="o">/</span> <span class="s2">&quot;ray_output.log&quot;</span><span class="p">)</span>
+        <span class="n">ray_logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">init</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">init</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.pkl&quot;</span><span class="p">):</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">load</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                    <span class="n">tune_result</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tune_result</span> <span class="o">=</span> <span class="n">run_tune</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">target_metric</span><span class="p">,</span> <span class="n">target_mode</span><span class="p">,</span> <span class="n">max_t</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">resume</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tune_result</span> <span class="o">=</span> <span class="n">run_tune</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">target_metric</span><span class="p">,</span> <span class="n">target_mode</span><span class="p">,</span> <span class="n">max_t</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">eval</span><span class="p">:</span>
+            <span class="n">best_config</span> <span class="o">=</span> <span class="n">tune_result</span><span class="o">.</span><span class="n">get_best_config</span><span class="p">(</span>
+                <span class="n">metric</span><span class="o">=</span><span class="n">target_metric</span><span class="p">,</span>
+                <span class="n">mode</span><span class="o">=</span><span class="n">target_mode</span><span class="p">,</span>
+                <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;last&quot;</span> <span class="k">if</span> <span class="n">model_cls</span> <span class="o">==</span> <span class="s2">&quot;CovernetVI&quot;</span> <span class="k">else</span> <span class="s2">&quot;all&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">tune_result_rerun</span> <span class="o">=</span> <span class="n">rerun_config</span><span class="p">(</span>
+                <span class="n">best_config</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">target_metric</span><span class="p">,</span> <span class="n">target_mode</span><span class="p">,</span> <span class="n">max_t</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">model_cls</span> <span class="o">==</span> <span class="s2">&quot;CovernetVI&quot;</span><span class="p">:</span>
+                <span class="n">args</span><span class="o">.</span><span class="n">init</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">tune_result_rerun</span><span class="o">.</span><span class="n">get_last_checkpoint</span><span class="p">(</span>
+                        <span class="n">trial</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="n">target_metric</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">target_mode</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="n">tune_result_rerun</span><span class="o">.</span><span class="n">trials</span>
+                <span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">args</span><span class="o">.</span><span class="n">init</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">tune_result_rerun</span><span class="o">.</span><span class="n">get_best_checkpoint</span><span class="p">(</span>
+                        <span class="n">trial</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="n">target_metric</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">target_mode</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="n">tune_result_rerun</span><span class="o">.</span><span class="n">trials</span>
+                <span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">best_config</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="n">trainer_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;trainer&#39;</span><span class="p">)</span>
+    <span class="n">trainer_logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">dir</span><span class="p">)</span> <span class="o">/</span> <span class="s1">&#39;logs&#39;</span> <span class="o">/</span> <span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">fh</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">dir</span><span class="p">)</span> <span class="o">/</span> <span class="s1">&#39;logs&#39;</span> <span class="o">/</span> <span class="n">name</span> <span class="o">/</span> <span class="s2">&quot;trainer_output.log&quot;</span><span class="p">)</span>
+    <span class="n">trainer_logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">init</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">init</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39;*&#39;</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">init</span><span class="p">:</span>
+            <span class="n">root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">init</span><span class="p">)</span>
+            <span class="n">checkpoints</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+                <span class="nb">list</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;/*/checkpoint&quot;</span><span class="p">)),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">init</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">checkpoints</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span> <span class="ow">in</span> <span class="n">found</span><span class="p">:</span>
+                    <span class="n">found</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span>
+                    <span class="n">args</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">notrain</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">init</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">args</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.pkl&quot;</span><span class="p">):</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">init</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                    <span class="n">tune_result_rerun</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+                <span class="n">args</span><span class="o">.</span><span class="n">init</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">tune_result_rerun</span><span class="o">.</span><span class="n">get_best_checkpoint</span><span class="p">(</span>
+                        <span class="n">trial</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="n">target_metric</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">target_mode</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">trial</span> <span class="ow">in</span> <span class="n">tune_result_rerun</span><span class="o">.</span><span class="n">trials</span>
+                <span class="p">]</span>
+
+        <span class="n">best_config</span><span class="p">[</span><span class="s1">&#39;dir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">dir</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;gin_config&#39;</span> <span class="ow">in</span> <span class="n">best_config</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">best_config</span><span class="p">[</span><span class="s1">&#39;gin_config&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;load_model&#39;</span> <span class="ow">in</span> <span class="n">best_config</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">best_config</span><span class="p">[</span><span class="s1">&#39;load_model&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">init</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">mdl</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">init</span><span class="p">):</span>
+                <span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span>
+                    <span class="n">load_model</span><span class="o">=</span><span class="n">mdl</span><span class="p">,</span> <span class="n">current_time</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;model_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">best_config</span>
+                <span class="p">)</span>
+                <span class="n">trainer</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">eval</span><span class="p">:</span>
+                    <span class="n">trainer</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">single_run_and_eval</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">target_metric</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="ow">not</span> <span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">optimize1</span> <span class="ow">or</span> <span class="n">args</span><span class="o">.</span><span class="n">optimize2</span> <span class="ow">or</span> <span class="n">args</span><span class="o">.</span><span class="n">optimize3</span><span class="p">):</span>
+        <span class="n">single_run_and_eval</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">target_metric</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021 - 2022, Continental Heat AI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

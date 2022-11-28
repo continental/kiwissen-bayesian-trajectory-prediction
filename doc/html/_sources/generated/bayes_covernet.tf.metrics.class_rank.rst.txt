@@ -1,0 +1,6 @@
+bayes\_covernet.tf.metrics.class\_rank
+======================================
+
+.. currentmodule:: bayes_covernet.tf.metrics
+
+.. autofunction:: class_rank

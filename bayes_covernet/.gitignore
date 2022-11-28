@@ -1,0 +1,10 @@
+/results/
+*.pyc
+/cache/
+/runs/
+/logs/
+/models/
+/ray_tune/
+/config/
+/trajectory/
+/knowledge/

@@ -1,0 +1,39 @@
+bayes\_covernet.util.tune
+=========================
+    
+.. rubric:: Description
+
+.. automodule:: bayes_covernet.util.tune
+   
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    .. rubric:: Functions
+
+    .. autosummary::
+        :toctree:
+        
+        ~trial_name_string
+        
+
+    
+    

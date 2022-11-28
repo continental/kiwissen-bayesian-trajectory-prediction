@@ -1,0 +1,13 @@
+bayes\_covernet.tf.model.models.CovernetVI
+==========================================
+
+.. currentmodule:: bayes_covernet.tf.model.models
+
+.. autoclass:: CovernetVI
+   :members:
+   :show-inheritance:
+   :private-members:
+   :undoc-members:
+   :inherited-members:
+   
+   .. autoclasstoc::

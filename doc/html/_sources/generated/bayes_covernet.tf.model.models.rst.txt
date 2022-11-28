@@ -1,0 +1,50 @@
+bayes\_covernet.tf.model.models
+===============================
+    
+.. rubric:: Description
+
+.. automodule:: bayes_covernet.tf.model.models
+   
+    
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    .. rubric:: Classes
+
+    .. autosummary::
+        :toctree:
+        :nosignatures:
+        
+        ~Covernet
+        
+        ~CovernetDet
+        
+        ~CovernetSNGP
+        
+        ~CovernetVI
+        
+        ~MultiPath
+        
+        ~MultiPathDet
+        
+
+    
+    
+
+
+    
+    
+    
+
+
+    
+    
+    

@@ -1,0 +1,6 @@
+bayes\_covernet.tf.model.resnet50\_variational.resnet50\_variational
+====================================================================
+
+.. currentmodule:: bayes_covernet.tf.model.resnet50_variational
+
+.. autofunction:: resnet50_variational
